@@ -1,8 +1,8 @@
-#include<capp.h>
+#include<cache.h>
 
 int main()
 {
-	temp t = {.s = 7, .str = "Hello World"};
-	print_temp_test(t);
+	printf("cache structure size : %lu\n", sizeof(cache));
+	printf("slab  structure size : %lu\n", sizeof(slab));
 	return 0;
 }

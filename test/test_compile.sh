@@ -1,2 +1,5 @@
-gcc ./test.c -o test.out -I${CAPP_PATH}/inc -L${CAPP_PATH}/bin -lcapp
+cd ..
+make all
+cd test
+gcc ./test.c -o test.out -I${SLOPPY_PATH}/inc -L${SLOPPY_PATH}/bin -lsloppy
 ./test.out
