@@ -13,10 +13,10 @@ SOURCES:=${shell find $(SRC_DIR) -name '*.c'}
 # and the required objects ot be built
 OBJECTS:=$(patsubst $(SRC_DIR)%.c,$(OBJ_DIR)%.o,${SOURCES})
 # the traget library
-TARGET:=${BIN_DIR}/libcapp.a
+TARGET:=${BIN_DIR}/libsloppy.a
 
 # place your include directories -I flag here
-CFLAGS=-I${INC_DIR}
+CFLAGS=-Wall -I${INC_DIR}
 
 # rule to make the object directory
 ${OBJ_DIR} :
@@ -43,4 +43,4 @@ clean :
 
 # path to the library
 path : 
-	@echo "export CAPP_PATH=\`pwd\`"
+	@echo "export SLOPPY_PATH=\`pwd\`"
