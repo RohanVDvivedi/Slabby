@@ -25,8 +25,8 @@ struct slab_desc
 	// i.e. it is not in use by any user thread
 	uint32_t reference_count;
 
-	// this is the index of the last object in slab which was allocated
-	uint32_t last_allocation_index;
+	// this is the byte index in the allocation bitmap of the last object in slab which was allocated
+	uint32_t last_allocation_bit_map_index;
 
 	// only 1 bit is being used to represent if an object is allocated or not
 	// contrary to bonvick's slab alocation where a stack of offsets were used
@@ -41,8 +41,11 @@ slab_desc* slab_create(cache* cachep);
 
 void* allocate_object(slab_desc* slab_desc_p, cache* cachep);
 
-void free_object(slab_desc* slab_desc_p, void* object, cache* cachep);
+// retuns false and fails if the object pointer you tried to free is not valid
+int free_object(slab_desc* slab_desc_p, void* object, cache* cachep);
 
-void slab_destroy(slab_desc* slab_desc_p, cache* cachep);
+// returns false and fails if the slab objects were being referenced by some user
+// i.e. reference count is not zero
+int slab_destroy(slab_desc* slab_desc_p, cache* cachep);
 
 #endif
