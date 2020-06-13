@@ -24,7 +24,7 @@ slab_desc* slab_create(cache* cachep)
 {
 	// mmap memory equivalent to the size of slab
 	void* slab = mmap(NULL, cachep->slab_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED | MAP_POPULATE, 0, 0);
-	
+
 	// this many objects are going to be accomodated in the slab
 	uint32_t num_of_objects = number_of_objects_per_slab(cachep);
 
@@ -43,9 +43,9 @@ slab_desc* slab_create(cache* cachep)
 	slab_desc_p->last_allocation_bit_map_index = 0;
 
 	// initialize the allocation bitmap, set all bits to 1 to indicate that they are free
-	for(uint32_t bit_map_index = 0; bit_map_index < alloc_bit_map_size; bit_map_index++)
+	for(uint32_t i = 0; i < alloc_bit_map_size; i++)
 	{
-		slab_desc_p->allocation_bit_map[bit_map_index] = 0xff;
+		slab_desc_p->allocation_bit_map[i] = 0xff;
 	}
 
 	// init all the objects
@@ -54,7 +54,7 @@ slab_desc* slab_create(cache* cachep)
 		cachep->init(slab_desc_p->objects + (i * cachep->object_size));
 	}
 
-	return NULL;
+	return slab_desc_p;
 }
 
 void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
@@ -74,13 +74,16 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 	uint32_t bit_map_index = slab_desc_p->last_allocation_bit_map_index;
 
 	// loop over allocation_bit_map[] and find the free object
-	for(uint32_t i; i < alloc_bit_map_size; i++)
+	for(uint32_t i = 0; i < alloc_bit_map_size; i++)
 	{
 		if(slab_desc_p->allocation_bit_map[bit_map_index] > 0)
 		{
-			object_found = 1;
-			object_index = bit_map_index * 8 + ffs(slab_desc_p->allocation_bit_map[bit_map_index]);
-			break;
+			object_index = bit_map_index * 8 + ffs(slab_desc_p->allocation_bit_map[bit_map_index]) - 1;
+			if(object_index < num_of_objects)
+			{
+				object_found = 1;
+				break;
+			}
 		}
 
 		bit_map_index = (bit_map_index + 1) % alloc_bit_map_size;
@@ -96,6 +99,8 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 
 		// set last_allocation_bit_map_index accordingly
 		slab_desc_p->last_allocation_bit_map_index = bit_map_index;
+
+		return slab_desc_p->objects + (object_index * cachep->object_size);
 	}
 
 	return NULL;
@@ -103,7 +108,7 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 
 int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 {
-	if(slab_desc_p->objects <= object && object < ((void*)slab_desc_p))
+	if(!(slab_desc_p->objects <= object && object < ((void*)slab_desc_p)))
 	{
 		return 0;
 	}
@@ -116,7 +121,7 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	// call recycle 
 	cachep->recycle(object);
 
-	uint32_t object_index = (object - slab_desc_p->objects) % cachep->object_size;
+	uint32_t object_index = (((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) / cachep->object_size;
 
 	// set the allocation bit map to mark the object as free
 	set_allocation_bit_map(slab_desc_p->allocation_bit_map, object_index);
