@@ -12,11 +12,11 @@ uint32_t number_of_objects_per_slab(cache* cachep)
 
 void cache_create(	cache* cachep,
 
-					size_t slab_size, 
-					size_t object_size, 
+					size_t slab_size,
+					size_t object_size,
 
-					void (*init)(void*, size_t), 
-					void (*recycle)(void*, size_t), 
+					void (*init)(void*, size_t),
+					void (*recycle)(void*, size_t),
 					void (*deinit)(void*, size_t)
 				)
 {
