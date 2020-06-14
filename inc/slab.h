@@ -4,12 +4,20 @@
 #include<pthread.h>
 #include<stdint.h> 
 
+#include<linkedlist.h>
+
+// slab_desc is short for slab_description
+// this structure is always present at the end of the slab
+// a slab is a group of n contigous 4KB pages
+
 typedef struct slab_desc slab_desc;
 struct slab_desc
 {
-	// exclusive access to the list iterators is protcted and locked by the corresponding list locks of the cache
-	slab_desc* next;
-	slab_desc* prev;
+	// exclusive access to the list node is protected and locked by the corresponding list locks of the cache
+	// node used to link slab_desc
+	llnode slab_list_node;
+
+	// **** slab attributes
 
 	pthread_mutex_t slab_lock;
 

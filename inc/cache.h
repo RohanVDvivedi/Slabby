@@ -6,21 +6,19 @@
 #include<stdint.h>
 
 #include<slab.h>
+#include<linkedlist.h>
 
 typedef struct cache cache;
 struct cache
 {
 	pthread_mutex_t	free_list_lock;		// allows mutually exclusive access to the free slabs list
-	slab_desc* free;			// list of free slabs ready to reap, no objects are currently in user space from here
-	uint32_t free_slabs;		// number of slabs in 
+	linkedlist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
 	pthread_mutex_t	partial_list_lock;	// allows mutually exclusive access to the partial slabs list
-	slab_desc* partial;			// list of partial slabs, for further allocation
-	uint32_t partial_slabs;		// number of partial slabs
+	linkedlist partial_slab_descs;		// list of partial slabs, for further allocation
 
 	pthread_mutex_t full_list_lock; 	// allows mutually exclusive access to the full slabs list
-	slab_desc* full;			// list of full slabs, a slab is moved to-fro free and full slabs as required
-	uint32_t full_slabs;		// number of full slabs
+	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
 	uint32_t min_in_use_slabs;	// if the number of partial + full slabs geos below this number 
 								// a new slab is moved from free to partial slabs and the new object is allocated from there

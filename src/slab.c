@@ -21,8 +21,7 @@ slab_desc* slab_create(cache* cachep)
 	// slab objects always start at the beginning
 	slab_desc_p->objects = slab;
 	pthread_mutex_init(&(slab_desc_p->slab_lock), NULL);
-	slab_desc_p->prev = NULL;
-	slab_desc_p->next = NULL;
+	initialize_llnode(&(slab_desc_p->slab_list_node));
 	slab_desc_p->free_objects = num_of_objects;
 	slab_desc_p->last_allocated_object = 0;
 
