@@ -17,7 +17,7 @@ struct object
 	char bhoy[10];
 };
 
-void init(void* obj)
+void init(void* obj, size_t object_size)
 {
 	((object*)obj)->counter = 0;
 	((object*)obj)->a = NULL;
@@ -27,12 +27,12 @@ void init(void* obj)
 	memset(((object*)obj)->bhoy, 0, 10);
 }
 
-void recycle(void* obj)
+void recycle(void* obj, size_t object_size)
 {
 	((object*)obj)->counter++;
 }
 
-void deinit(void* obj)
+void deinit(void* obj, size_t object_size)
 {
 	pthread_mutex_destroy(&(((object*)obj)->lock));
 }
