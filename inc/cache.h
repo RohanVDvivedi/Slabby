@@ -48,8 +48,8 @@ void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*in
 void* cache_alloc(cache* cachep);
 void cache_free(cache* cachep, void* obj);
 
-void cache_grow(cache* cachep, uint32_t slabs_to_add);
-uint32_t cache_reap(cache* cachep);						// returns the number of slabs reaped
+void cache_grow(cache* cachep);
+int cache_reap(cache* cachep);						// returns 1, if a slab was reaped
 
 int cache_destroy(cache* cachep);
 

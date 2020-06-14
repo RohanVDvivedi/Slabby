@@ -42,8 +42,32 @@ void cache_create(	cache* cachep,
 void* cache_alloc(cache* cachep);
 void cache_free(cache* cachep, void* obj);
 
-void cache_grow(cache* cachep, uint32_t slabs_to_add);
-uint32_t cache_reap(cache* cachep);
+void cache_grow(cache* cachep)
+{
+	slab_desc* slab_desc_p = slab_create(cachep);
+	pthread_mutex_lock(&(cachep->free_list_lock));
+		insert_head(&(cachep->free_slab_descs), slab_desc_p);
+	pthread_mutex_unlock(&(cachep->free_list_lock));
+
+}
+
+int cache_reap(cache* cachep)
+{
+	slab_desc* slab_desc_p = NULL;
+	pthread_mutex_lock(&(cachep->free_list_lock));
+		if(!is_linkedlist_empty(&(cachep->free_slab_descs)))
+		{
+			slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
+			remove_head(&(cachep->free_slab_descs));
+		}
+	pthread_mutex_unlock(&(cachep->free_list_lock));
+	if(slab_desc_p)
+	{
+		slab_destroy(slab_desc_p, cachep);
+		return 1;
+	}
+	return 0;
+}
 
 int cache_destroy(cache* cachep)
 {
