@@ -1,6 +1,7 @@
 #include<slab.h>
 
 #include<cache.h>
+#include<bitmap.h>
 
 #include<strings.h>  /* ffs */
 #include<sys/mman.h> /*mmap munmap*/
@@ -8,16 +9,6 @@
 static uint32_t allocation_bit_map_size(uint32_t object_count)
 {
 	return (object_count/8) + (((object_count % 8)>0) ? 1 : 0);
-}
-
-static void set_allocation_bit_map(uint8_t* allocation_bit_map, uint32_t object_no)
-{
-	allocation_bit_map[object_no/8] |= (1<<(object_no%8));
-}
-
-static void reset_allocation_bit_map(uint8_t* allocation_bit_map, uint32_t object_no)
-{
-	allocation_bit_map[object_no/8] &= (~(1<<(object_no%8)));
 }
 
 slab_desc* slab_create(cache* cachep)
@@ -92,7 +83,7 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 	if(object_found)
 	{
 		// mark the object as allocated / 0 in the allocation bit map size
-		reset_allocation_bit_map(slab_desc_p->allocation_bit_map, object_index);
+		reset_bitmap(slab_desc_p->allocation_bit_map, object_index);
 
 		// increment the reference count of the slab
 		slab_desc_p->reference_count++;
@@ -124,7 +115,7 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	uint32_t object_index = (((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) / cachep->object_size;
 
 	// set the allocation bit map to mark the object as free
-	set_allocation_bit_map(slab_desc_p->allocation_bit_map, object_index);
+	set_bitmap(slab_desc_p->allocation_bit_map, object_index);
 
 	// decrement the reference count of the slab
 	slab_desc_p->reference_count++;
