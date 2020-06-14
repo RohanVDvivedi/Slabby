@@ -7,10 +7,11 @@
 typedef struct slab_desc slab_desc;
 struct slab_desc
 {
-	pthread_mutex_t slab_lock;
-
+	// exclusive access to the list iterators is protcted and locked by the corresponding list locks of the cache
 	slab_desc* next;
 	slab_desc* prev;
+
+	pthread_mutex_t slab_lock;
 
 	// pointer to the first object
 	void* objects;

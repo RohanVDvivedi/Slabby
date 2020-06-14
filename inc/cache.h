@@ -10,11 +10,13 @@
 typedef struct cache cache;
 struct cache
 {
-	pthread_mutex_t	free_list_lock;	// allows mutually exclusive access to the cache free slab list
-	pthread_mutex_t in_use_list_lock;// allows mutually exclusive access to the cache free slab list
+	pthread_mutex_t	free_list_lock;		// allows mutually exclusive access to the free slabs list
+	pthread_mutex_t	partial_list_lock;	// allows mutually exclusive access to the partial slabs list
+	pthread_mutex_t full_list_lock; 	// allows mutually exclusive access to the full slabs list
 
 	slab_desc* free;			// list of free slabs ready to reap, no objects are currently in user space from here
-	slab_desc* in_use;			// list of slabs in use, a slab is moved to-fro free and in_ise slabs as required
+	slab_desc* partial;			// list of partial slabs, for further allocation
+	slab_desc* full;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
 	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
 								// greater than atleast 32 times the size of the object
