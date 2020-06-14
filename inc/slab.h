@@ -1,10 +1,8 @@
 #ifndef SLAB_H
 #define SLAB_H
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdint.h>
-#include<string.h>
+#include<pthread.h>
+#include<stdint.h> 
 
 typedef struct slab_desc slab_desc;
 struct slab_desc

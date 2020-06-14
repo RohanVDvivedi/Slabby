@@ -1,5 +1,6 @@
 #include<cache.h>
 
+#include<string.h>
 #include<alloca.h>
 #include<pthread.h>
 
