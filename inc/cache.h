@@ -34,14 +34,16 @@ struct cache
 	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not
 
-	void (*init)(void*);		// called on all objects when a new slab is added to the cache
-	void (*recycle)(void*);		// called before giving a used object again to the user
-	void (*deinit)(void*);		// called on all objects before returning a slab to the os
+	void (*init)(void*, size_t);		// called on all objects when a new slab is added to the cache
+	void (*recycle)(void*, size_t);		// called before giving a used object again to the user
+	void (*deinit)(void*, size_t);		// called on all objects before returning a slab to the os
+		// in all the above functions the void* typed frst parameter will be the pointer to the object,
+		// while size_t typed second parameter will the the object_size of the cache
 };
 
 uint32_t number_of_objects_per_slab(cache* cachep);
 
-int cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*), void (*recycle)(void*), void (*deinit)(void*));
+void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*recycle)(void*, size_t), void (*deinit)(void*, size_t));
 
 void* cache_alloc(cache* cachep);
 void cache_free(cache* cachep, void* obj);

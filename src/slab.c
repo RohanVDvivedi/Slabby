@@ -30,9 +30,7 @@ slab_desc* slab_create(cache* cachep)
 
 	// init all the objects
 	for(uint32_t i = 0; i < num_of_objects; i++)
-	{
-		cachep->init(slab_desc_p->objects + (i * cachep->object_size));
-	}
+		cachep->init(slab_desc_p->objects + (i * cachep->object_size), cachep->object_size);
 
 	return slab_desc_p;
 }
@@ -78,7 +76,7 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	pthread_mutex_lock(&(slab_desc_p->slab_lock));
 
 		// call recycle 
-		cachep->recycle(object);
+		cachep->recycle(object, cachep->object_size);
 
 		uint32_t object_index = (((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) / cachep->object_size;
 
@@ -105,7 +103,7 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 
 	// iterate over all the objects and deinit all of them
 	for(uint32_t i = 0; i < num_of_objects; i++)
-		cachep->deinit(slab_desc_p->objects + (i * cachep->object_size));
+		cachep->deinit(slab_desc_p->objects + (i * cachep->object_size), cachep->object_size);
 
 	pthread_mutex_destroy(&(slab_desc_p->slab_lock));
 
