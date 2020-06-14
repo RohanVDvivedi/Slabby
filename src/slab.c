@@ -41,7 +41,7 @@ slab_desc* slab_create(cache* cachep)
 void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 {
 	// this many objects are going to be accomodated in the slab
-	uint32_t num_of_objects = number_of_objects_per_slab(cachep);
+	uint32_t num_of_objects = number_of_objects_per_slab(cachep);print_bitmap(slab_desc_p->free_bitmap, num_of_objects);
 
 	void* object = NULL;
 

@@ -16,7 +16,7 @@ OBJECTS:=$(patsubst $(SRC_DIR)%.c,$(OBJ_DIR)%.o,${SOURCES})
 TARGET:=${BIN_DIR}/libsloppy.a
 
 # place your include directories -I flag here
-CFLAGS=-Wall -I${INC_DIR}
+CFLAGS=-Wall -I${INC_DIR} -I${CUTLERY_PATH}/inc
 
 # rule to make the object directory
 ${OBJ_DIR} :
