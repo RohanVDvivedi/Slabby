@@ -13,7 +13,7 @@ int cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*ini
 void* cache_alloc(cache* cachep);
 void cache_free(cache* cachep, void* obj);
 
-int cache_grow(cache* cachep);
-int cache_reap(cache* cachep);
+void cache_grow(cache* cachep, uint32_t slabs_to_add);
+uint32_t cache_reap(cache* cachep);
 
 int cache_destroy(cache* cachep);
