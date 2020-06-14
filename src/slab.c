@@ -94,5 +94,7 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 		cachep->deinit(slab_desc_p->objects + (i * cachep->object_size));
 
 	// munmap memory
-	return munmap(slab_desc_p->objects, cachep->slab_size);;
+	munmap(slab_desc_p->objects, cachep->slab_size);
+
+	return 1;
 }

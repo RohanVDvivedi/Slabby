@@ -70,7 +70,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
-		printf("free object %d => addr : %p, object counter : %d\n", fr, objects_allocated[i], objects_allocated[i]->counter);
+		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
 	printf("\n");
@@ -86,7 +86,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
-		printf("free object %d => addr : %p, object counter : %d\n", fr, objects_allocated[i], objects_allocated[i]->counter);
+		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
 	printf("\n");
@@ -102,13 +102,13 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
-		printf("free object %d => addr : %p, object counter : %d\n", fr, objects_allocated[i], objects_allocated[i]->counter);
+		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
 	printf("\n");
 
 
-	slab_destroy(slab_desc_p, &cash);
+	printf("slab destroyed with result : %d\n", slab_destroy(slab_desc_p, &cash));
 
 	return 0;
 }
