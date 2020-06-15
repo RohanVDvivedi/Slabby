@@ -13,6 +13,18 @@ static uint32_t number_of_objects_per_slab(cache* cachep)
 	return ( 8 * (cachep->slab_size - sizeof(slab_desc)) ) / (8 * cachep->object_size + 1);
 }
 
+static void transfer_a_to_b_head(const void* slab_desc_p, linkedlist* a, linkedlist* b)
+{
+	remove_from_list(a, slab_desc_p);
+	insert_head(b, slab_desc_p);
+}
+
+static void transfer_a_to_b_tail(const void* slab_desc_p, linkedlist* a, linkedlist* b)
+{
+	remove_from_list(a, slab_desc_p);
+	insert_tail(b, slab_desc_p);
+}
+
 void cache_create(	cache* cachep,
 
 					size_t slab_size,
@@ -46,27 +58,47 @@ void cache_create(	cache* cachep,
 
 void* cache_alloc(cache* cachep)
 {
-	void* object = NULL;
-
 	if(is_linkedlist_empty(&(cachep->partial_slab_descs)))
 	{
-		// grow the cache
-	}
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % (cachep->partial_slab_descs.node_count/2));
+		// grow the cache if the free slabs list is also empty
+		if(is_linkedlist_empty(&(cachep->free_slab_descs)))
+		{
+			// increment the free slab list by 2
+			cache_grow(cachep);
+			cache_grow(cachep);
+		}
 
-	object = allocate_object(slab_desc_p, cachep);
+		// transfer only one slab from free to partial
+		transfer_a_to_b_head(get_head(&(cachep->free_slab_descs)), &(cachep->free_slab_descs), &(cachep->partial_slab_descs));
+	}
+
+	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
+	// at the same time we aim to not finish up all the slabs in the partial list at the same time
+	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % (cachep->partial_slab_descs.node_count/3));
+
+	// if there is only one object, on the slab allocate it and mave the slab to full list
 	if(slab_desc_p->free_objects == 1)
-	{
-		remove_from_list(&(cachep->partial_slab_descs), slab_desc_p);
-		insert_head(&(cachep->full_list_lock), slab_desc_p);
-	}
+		transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->full_slab_descs));
 
-	return object;
+	return allocate_object(slab_desc_p, cachep);
 }
 
 void cache_free(cache* cachep, void* obj)
 {
+	slab_desc* slab_desc_p = NULL;	// find some way to find the slab descriptor on which the cureent object is residing
 
+	// if it is in full slabs description, move it to the end of the partial list
+	if(exists_in_list(&(cachep->full_slab_descs), slab_desc_p))
+	{
+		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
+	}
+	else if(exists_in_list(&(cachep->partial_slab_descs), slab_desc_p))
+	{
+		if(slab_desc_p->free_objects == cachep->objects_per_slab - 1)
+			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
+	}
+
+	free_object(slab_desc_p, obj, cachep);
 }
 
 void cache_grow(cache* cachep)
