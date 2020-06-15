@@ -53,7 +53,6 @@ void cache_create(	cache* cachep,
 					size_t object_size,
 
 					void (*init)(void*, size_t),
-					void (*recycle)(void*, size_t),
 					void (*deinit)(void*, size_t)
 				)
 {
@@ -76,7 +75,6 @@ void cache_create(	cache* cachep,
 	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	cachep->init = init;
-	cachep->recycle = recycle;
 	cachep->deinit = deinit;
 }
 

@@ -63,9 +63,6 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	if(((((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) % cachep->object_size))
 		return 0;
 
-	// call recycle 
-	cachep->recycle(object, cachep->object_size);
-
 	uint32_t object_index = (((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) / cachep->object_size;
 
 	// this effectively lets us know that there is a free object close by the last allocated index

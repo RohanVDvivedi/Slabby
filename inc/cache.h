@@ -33,13 +33,12 @@ struct cache
 	// 1 bit for allocation mapping, to check if a object is allocated or not
 
 	void (*init)(void*, size_t);		// called on all objects when a new slab is added to the cache
-	void (*recycle)(void*, size_t);		// called before giving a used object again to the user
 	void (*deinit)(void*, size_t);		// called on all objects before returning a slab to the os
 		// in all the above functions the void* typed frst parameter will be the pointer to the object,
 		// while size_t typed second parameter will the the object_size of the cache
 };
 
-void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*recycle)(void*, size_t), void (*deinit)(void*, size_t));
+void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
 
 void* cache_alloc(cache* cachep);
 int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
