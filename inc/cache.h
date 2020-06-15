@@ -22,18 +22,12 @@ struct cache
 	pthread_mutex_t full_list_lock; 	// allows mutually exclusive access to the full slabs list
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
-	uint32_t min_in_use_slabs;	// if the number of partial + full slabs geos below this number 
-								// a new slab is moved from free to partial slabs and the new object is allocated from there
-	uint32_t max_free_slabs;	// free slabs are automatically returned if they exceeed max_free_slabs
-
 	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
 								// greater than atleast 32 times the size of the object
 
 	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
 
-	uint32_t objects_per_slab;	// number of objects on any slab of theis cache
-
-	volatile int growing;		// set when a new slab is being created and will be added to free list soon
+	uint32_t objects_per_slab;	// number of objects on any slab of this cache
 
 	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not
