@@ -49,4 +49,10 @@ int cache_reap(cache* cachep);						// returns 1, if a slab was reaped
 
 int cache_destroy(cache* cachep);
 
+/*
+**	NO CONCURRENT CACHE CREATE AND DESTROY CALLS MUST BE MADE ON THE cache
+**	so cache must be created and destroyed by your application's main thread
+**	cache_lock is used only for alloc, free, reap and destroy operation
+*/
+
 #endif

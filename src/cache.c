@@ -82,6 +82,8 @@ void cache_create(	cache* cachep,
 
 void* cache_alloc(cache* cachep)
 {
+	pthread_mutex_lock(&(cachep->cache_lock));
+
 	if(is_linkedlist_empty(&(cachep->partial_slab_descs)))
 	{
 		// grow the cache if the free slabs list is also empty
@@ -106,6 +108,8 @@ void* cache_alloc(cache* cachep)
 
 	lock_slab(slab_desc_p);
 
+	pthread_mutex_unlock(&(cachep->cache_lock));
+
 	void* object = allocate_object(slab_desc_p, cachep);
 
 	unlock_slab(slab_desc_p);
@@ -117,6 +121,8 @@ int cache_free(cache* cachep, void* obj)
 {
 	// get the page that contains the object
 	void* page_addr = (void*)(((uintptr_t)obj) & ~(0xfff));
+
+	pthread_mutex_lock(&(cachep->cache_lock));
 
 	// find some way to find the slab descriptor on which the cureent object is residing
 	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
@@ -134,6 +140,8 @@ int cache_free(cache* cachep, void* obj)
 
 	lock_slab(slab_desc_p);
 
+	pthread_mutex_unlock(&(cachep->cache_lock));
+
 	int freed = free_object(slab_desc_p, obj, cachep);
 
 	unlock_slab(slab_desc_p);
@@ -143,12 +151,17 @@ int cache_free(cache* cachep, void* obj)
 
 void cache_grow(cache* cachep)
 {
-	cache_grow_unsafe(cachep);
+	pthread_mutex_lock(&(cachep->cache_lock));
+		cache_grow_unsafe(cachep);
+	pthread_mutex_unlock(&(cachep->cache_lock));
 }
 
 int cache_reap(cache* cachep)
 {
-	return cache_reap_unsafe(cachep);
+	pthread_mutex_lock(&(cachep->cache_lock));
+		int reaped = cache_reap_unsafe(cachep);
+	pthread_mutex_unlock(&(cachep->cache_lock));
+	return reaped;
 }
 
 int cache_destroy(cache* cachep)
