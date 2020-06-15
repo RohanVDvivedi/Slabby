@@ -43,13 +43,13 @@ void cache_create(	cache* cachep,
 	cachep->objects_per_slab = number_of_objects_per_slab(cachep);
 
 	pthread_mutex_init(&(cachep->free_list_lock), NULL);
-	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node), NULL);
+	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	pthread_mutex_init(&(cachep->partial_list_lock), NULL);
-	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node), NULL);
+	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	pthread_mutex_init(&(cachep->full_list_lock), NULL);
-	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node), NULL);
+	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	cachep->init = init;
 	cachep->recycle = recycle;
@@ -83,27 +83,15 @@ void* cache_alloc(cache* cachep)
 	return allocate_object(slab_desc_p, cachep);
 }
 
-static slab_desc* find_page_containing_slab(linkedlist* list, void* page_addr)
-{
-	slab_desc* slab_desc_p = (slab_desc*) get_head(list);
-	while(!is_linkedlist_empty(list))
-	{
-		if(slab_desc_p->objects <= page_addr && page_addr < ((void*)slab_desc_p))
-			return slab_desc_p;
-		slab_desc_p = (slab_desc*) slab_desc_p->slab_list_node.next;
-	}
-	return NULL;
-}
-
 void cache_free(cache* cachep, void* obj)
 {
 	// get the page that contains the object
 	void* page_addr = (void*)(((uintptr_t)obj) & 0xfff);
 
 	// find some way to find the slab descriptor on which the cureent object is residing
-	slab_desc* slab_desc_p = find_page_containing_slab(&(cachep->full_slab_descs), page_addr);
+	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
 	if(slab_desc_p == NULL)
-		slab_desc_p = find_page_containing_slab(&(cachep->full_slab_descs), page_addr);
+		slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->partial_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_list(&(cachep->full_slab_descs), slab_desc_p))

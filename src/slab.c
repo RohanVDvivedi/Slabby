@@ -105,3 +105,8 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 
 	return 1;
 }
+
+int is_inside_slab(const slab_desc* slab_desc_p, const void* page_addr)
+{
+	return slab_desc_p->objects <= page_addr && page_addr < ((void*)slab_desc_p) && (!(((uintptr_t)page_addr) & 0xfff));
+}
