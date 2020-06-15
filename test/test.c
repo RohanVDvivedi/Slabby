@@ -64,7 +64,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
 	printf("\n");
@@ -80,7 +80,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
 	printf("\n");
@@ -96,7 +96,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
 	printf("\n");

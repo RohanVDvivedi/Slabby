@@ -58,6 +58,7 @@ void unlock_slab(slab_desc* slab_desc_p);
 int slab_destroy(slab_desc* slab_desc_p, cache* cachep);
 
 // check if a page belongs to a slab using its slab_desc
+// returns 0, if any of the objects of the given slab lie inside this page
 int is_inside_slab(const slab_desc* slab_desc_p, const void* page_addr);
 
 #endif

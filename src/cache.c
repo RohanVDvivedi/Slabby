@@ -86,7 +86,7 @@ void* cache_alloc(cache* cachep)
 int cache_free(cache* cachep, void* obj)
 {
 	// get the page that contains the object
-	void* page_addr = (void*)(((uintptr_t)obj) & 0xfff);
+	void* page_addr = (void*)(((uintptr_t)obj) & ~(0xfff));
 
 	// find some way to find the slab descriptor on which the cureent object is residing
 	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
@@ -95,9 +95,7 @@ int cache_free(cache* cachep, void* obj)
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_list(&(cachep->full_slab_descs), slab_desc_p))
-	{
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
-	}
 	else if(exists_in_list(&(cachep->partial_slab_descs), slab_desc_p))
 	{
 		if(slab_desc_p->free_objects == cachep->objects_per_slab - 1)
