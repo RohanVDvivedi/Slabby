@@ -35,6 +35,8 @@ void cache_create(	cache* cachep,
 					void (*deinit)(void*, size_t)
 				)
 {
+	pthread_mutex_init(&(cachep->cache_lock), NULL);
+
 	// always a multiple of 4096
 	cachep->slab_size = ((slab_size/4096)*4096) + ((slab_size%4096)?4096:0);
 
@@ -154,6 +156,8 @@ int cache_destroy(cache* cachep)
 	pthread_mutex_destroy(&(cachep->free_list_lock));
 	pthread_mutex_destroy(&(cachep->partial_list_lock));
 	pthread_mutex_destroy(&(cachep->full_list_lock));
+
+	pthread_mutex_destroy(&(cachep->cache_lock));
 
 	return 1;
 }
