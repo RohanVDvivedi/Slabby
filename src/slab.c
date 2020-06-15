@@ -6,27 +6,31 @@
 #include<strings.h>  /* ffs */
 #include<sys/mman.h> /*mmap munmap*/
 
+uint32_t number_of_objects_per_slab(cache* cachep);
+
 slab_desc* slab_create(cache* cachep)
 {
+	uint32_t objects_per_slab = number_of_objects_per_slab(cachep);
+
 	// mmap memory equivalent to the size of slab
 	void* slab = mmap(NULL, cachep->slab_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED | MAP_POPULATE, 0, 0);
 
 	// create slab descriptor at the end of the slab
-	slab_desc* slab_desc_p = (slab + cachep->slab_size) - (bitmap_size_in_bytes(cachep->objects_per_slab) + sizeof(slab_desc));
+	slab_desc* slab_desc_p = (slab + cachep->slab_size) - (bitmap_size_in_bytes(objects_per_slab) + sizeof(slab_desc));
 
 	// initialize attributes, note : slab_desc object is kept at the end of the slab
 	// slab objects always start at the beginning
 	slab_desc_p->objects = slab;
 	pthread_mutex_init(&(slab_desc_p->slab_lock), NULL);
 	initialize_llnode(&(slab_desc_p->slab_list_node));
-	slab_desc_p->free_objects = cachep->objects_per_slab;
+	slab_desc_p->free_objects = objects_per_slab;
 	slab_desc_p->last_allocated_object = 0;
 
 	// initialize the free bitmap, set all bits to 1 to indicate that they are free
-	set_all_bits(slab_desc_p->free_bitmap, cachep->objects_per_slab);
+	set_all_bits(slab_desc_p->free_bitmap, objects_per_slab);
 
 	// init all the objects
-	for(uint32_t i = 0; i < cachep->objects_per_slab; i++)
+	for(uint32_t i = 0; i < objects_per_slab; i++)
 		cachep->init(slab_desc_p->objects + (i * cachep->object_size), cachep->object_size);
 
 	return slab_desc_p;
@@ -34,12 +38,14 @@ slab_desc* slab_create(cache* cachep)
 
 void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 {
+	uint32_t objects_per_slab = number_of_objects_per_slab(cachep);
+
 	void* object = NULL;
 
 	// get a free object if there exists any
 	if(slab_desc_p->free_objects)
 	{
-		uint32_t object_index = find_first_set(slab_desc_p->free_bitmap, slab_desc_p->last_allocated_object, cachep->objects_per_slab);
+		uint32_t object_index = find_first_set(slab_desc_p->free_bitmap, slab_desc_p->last_allocated_object, objects_per_slab);
 
 		// this effectively lets us know that there is a free object close by the last allocated index
 		// there is generally a free object close by
@@ -88,11 +94,13 @@ void unlock_slab(slab_desc* slab_desc_p)
 
 int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 {
-	if(slab_desc_p->free_objects < cachep->objects_per_slab)
+	uint32_t objects_per_slab = number_of_objects_per_slab(cachep);
+
+	if(slab_desc_p->free_objects < objects_per_slab)
 		return 0;
 
 	// iterate over all the objects and deinit all of them
-	for(uint32_t i = 0; i < cachep->objects_per_slab; i++)
+	for(uint32_t i = 0; i < objects_per_slab; i++)
 		cachep->deinit(slab_desc_p->objects + (i * cachep->object_size), cachep->object_size);
 
 	pthread_mutex_destroy(&(slab_desc_p->slab_lock));

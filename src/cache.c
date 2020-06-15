@@ -5,7 +5,7 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
-static uint32_t number_of_objects_per_slab(cache* cachep)
+uint32_t number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
 	// divided by the number of bits that will be occupied by the object
@@ -62,8 +62,6 @@ void cache_create(	cache* cachep,
 	cachep->slab_size = ((slab_size/4096)*4096) + ((slab_size%4096)?4096:0);
 
 	cachep->object_size = object_size;
-
-	cachep->objects_per_slab = number_of_objects_per_slab(cachep);
 
 	pthread_mutex_init(&(cachep->free_list_lock), NULL);
 	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
@@ -132,7 +130,7 @@ int cache_free(cache* cachep, void* obj)
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
 	else if(exists_in_list(&(cachep->partial_slab_descs), slab_desc_p))
 	{
-		if(slab_desc_p->free_objects == cachep->objects_per_slab - 1)
+		if(slab_desc_p->free_objects == number_of_objects_per_slab(cachep) - 1)
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
 	}
 

@@ -27,8 +27,6 @@ struct cache
 
 	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
 
-	uint32_t objects_per_slab;	// number of objects on any slab of this cache
-
 	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not
 
