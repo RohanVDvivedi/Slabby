@@ -11,6 +11,8 @@
 typedef struct cache cache;
 struct cache
 {
+	pthread_mutex_t	cache_lock;		// allows you to selectively take all locks on the lists and return which ever are not required
+
 	pthread_mutex_t	free_list_lock;		// allows mutually exclusive access to the free slabs list
 	linkedlist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
@@ -29,6 +31,8 @@ struct cache
 
 	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
 
+	uint32_t objects_per_slab;	// number of objects on any slab of theis cache
+
 	volatile int growing;		// set when a new slab is being created and will be added to free list soon
 
 	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
@@ -40,8 +44,6 @@ struct cache
 		// in all the above functions the void* typed frst parameter will be the pointer to the object,
 		// while size_t typed second parameter will the the object_size of the cache
 };
-
-uint32_t number_of_objects_per_slab(cache* cachep);
 
 void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*recycle)(void*, size_t), void (*deinit)(void*, size_t));
 

@@ -46,6 +46,13 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep);
 // retuns false and fails if the object pointer you tried to free is not valid
 int free_object(slab_desc* slab_desc_p, void* object, cache* cachep);
 
+/*
+**	YOU MUST LOCK SLAB BEFORE PERFORMING allocate_object OR free_object OPERTION ON ANY SLAB
+*/
+
+void lock_slab(slab_desc* slab_desc_p);
+void unlock_slab(slab_desc* slab_desc_p);
+
 // returns false and fails if the slab objects were being referenced by some user
 // i.e. free_object < number of objects on the slab
 int slab_destroy(slab_desc* slab_desc_p, cache* cachep);
