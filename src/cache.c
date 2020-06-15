@@ -83,11 +83,27 @@ void* cache_alloc(cache* cachep)
 	return allocate_object(slab_desc_p, cachep);
 }
 
-
+static slab_desc* find_page_containing_slab(linkedlist* list, void* page_addr)
+{
+	slab_desc* slab_desc_p = (slab_desc*) get_head(list);
+	while(!is_linkedlist_empty(list))
+	{
+		if(slab_desc_p->objects <= page_addr && page_addr < ((void*)slab_desc_p))
+			return slab_desc_p;
+		slab_desc_p = (slab_desc*) slab_desc_p->slab_list_node.next;
+	}
+	return NULL;
+}
 
 void cache_free(cache* cachep, void* obj)
 {
-	slab_desc* slab_desc_p = NULL;	// find some way to find the slab descriptor on which the cureent object is residing
+	// get the page that contains the object
+	void* page_addr = (void*)(((uintptr_t)obj) & 0xfff);
+
+	// find some way to find the slab descriptor on which the cureent object is residing
+	slab_desc* slab_desc_p = find_page_containing_slab(&(cachep->full_slab_descs), page_addr);
+	if(slab_desc_p == NULL)
+		slab_desc_p = find_page_containing_slab(&(cachep->full_slab_descs), page_addr);
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_list(&(cachep->full_slab_descs), slab_desc_p))
