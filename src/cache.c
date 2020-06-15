@@ -74,7 +74,7 @@ void* cache_alloc(cache* cachep)
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % (cachep->partial_slab_descs.node_count/3));
+	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % ((cachep->partial_slab_descs.node_count/3) + 1));
 
 	// if there is only one object, on the slab allocate it and mave the slab to full list
 	if(slab_desc_p->free_objects == 1)

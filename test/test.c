@@ -39,6 +39,8 @@ void deinit(void* obj, size_t object_size)
 
 #define SLAB_SIZE (4096 * 1)
 
+#define TEST_ALLOCS 100
+
 int main()
 {
 	printf("cache structure size : %lu\n", sizeof(cache));
@@ -55,7 +57,8 @@ int main()
 
 	printf("num_of_objects : %u\n\n", cash.objects_per_slab);
 
-	uint32_t objects_n = 4096/sizeof(object) - 3;
+	uint32_t objects_n = TEST_ALLOCS;
+
 	object** objects_allocated = alloca(objects_n * sizeof(object*));
 
 	for(uint32_t i = 0; i < objects_n; i++)
