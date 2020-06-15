@@ -25,6 +25,28 @@ static void transfer_a_to_b_tail(const void* slab_desc_p, linkedlist* a, linkedl
 	insert_tail(b, slab_desc_p);
 }
 
+static void cache_grow_unsafe(cache* cachep)
+{
+	slab_desc* slab_desc_p = slab_create(cachep);
+	insert_head(&(cachep->free_slab_descs), slab_desc_p);
+}
+
+static int cache_reap_unsafe(cache* cachep)
+{
+	slab_desc* slab_desc_p = NULL;
+	if(!is_linkedlist_empty(&(cachep->free_slab_descs)))
+	{
+		slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
+		remove_head(&(cachep->free_slab_descs));
+	}
+	if(slab_desc_p)
+	{
+		slab_destroy(slab_desc_p, cachep);
+		return 1;
+	}
+	return 0;
+}
+
 void cache_create(	cache* cachep,
 
 					size_t slab_size,
@@ -66,8 +88,8 @@ void* cache_alloc(cache* cachep)
 		if(is_linkedlist_empty(&(cachep->free_slab_descs)))
 		{
 			// increment the free slab list by 2
-			cache_grow(cachep);
-			cache_grow(cachep);
+			cache_grow_unsafe(cachep);
+			cache_grow_unsafe(cachep);
 		}
 
 		// transfer only one slab from free to partial
@@ -121,24 +143,12 @@ int cache_free(cache* cachep, void* obj)
 
 void cache_grow(cache* cachep)
 {
-	slab_desc* slab_desc_p = slab_create(cachep);
-	insert_head(&(cachep->free_slab_descs), slab_desc_p);
+	cache_grow_unsafe(cachep);
 }
 
 int cache_reap(cache* cachep)
 {
-	slab_desc* slab_desc_p = NULL;
-	if(!is_linkedlist_empty(&(cachep->free_slab_descs)))
-	{
-		slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
-		remove_head(&(cachep->free_slab_descs));
-	}
-	if(slab_desc_p)
-	{
-		slab_destroy(slab_desc_p, cachep);
-		return 1;
-	}
-	return 0;
+	return cache_reap_unsafe(cachep);
 }
 
 int cache_destroy(cache* cachep)
