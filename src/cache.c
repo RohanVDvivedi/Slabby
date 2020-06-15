@@ -80,7 +80,13 @@ void* cache_alloc(cache* cachep)
 	if(slab_desc_p->free_objects == 1)
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->full_slab_descs));
 
-	return allocate_object(slab_desc_p, cachep);
+	lock_slab(slab_desc_p);
+
+	void* object = allocate_object(slab_desc_p, cachep);
+
+	unlock_slab(slab_desc_p);
+
+	return object;
 }
 
 int cache_free(cache* cachep, void* obj)
@@ -102,7 +108,13 @@ int cache_free(cache* cachep, void* obj)
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
 	}
 
-	return free_object(slab_desc_p, obj, cachep);
+	lock_slab(slab_desc_p);
+
+	int freed = free_object(slab_desc_p, obj, cachep);
+
+	unlock_slab(slab_desc_p);
+
+	return freed;
 }
 
 void cache_grow(cache* cachep)
