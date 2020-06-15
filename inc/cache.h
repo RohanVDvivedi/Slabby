@@ -42,7 +42,7 @@ struct cache
 void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*recycle)(void*, size_t), void (*deinit)(void*, size_t));
 
 void* cache_alloc(cache* cachep);
-void cache_free(cache* cachep, void* obj);
+int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
 
 void cache_grow(cache* cachep);
 int cache_reap(cache* cachep);						// returns 1, if a slab was reaped

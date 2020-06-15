@@ -37,6 +37,8 @@ void deinit(void* obj, size_t object_size)
 	pthread_mutex_destroy(&(((object*)obj)->lock));
 }
 
+#define SLAB_SIZE (4096 * 1)
+
 int main()
 {
 	printf("cache structure size : %lu\n", sizeof(cache));
@@ -44,25 +46,21 @@ int main()
 
 	cache cash;
 
+	cache_create(&cash, SLAB_SIZE, sizeof(object), init, recycle, deinit);
+
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
 
 	printf("slab_size : %lu, object_size : %lu\n", cash.slab_size, cash.object_size);
 
-	printf("num_of_objects : %u\n\n", number_of_objects_per_slab(&cash));
-
-	cash.init = init;
-	cash.recycle = recycle;
-	cash.deinit = deinit;
-
-	slab_desc* slab_desc_p = slab_create(&cash);
+	printf("num_of_objects : %u\n\n", cash.objects_per_slab);
 
 	uint32_t objects_n = 4096/sizeof(object) - 3;
 	object** objects_allocated = alloca(objects_n * sizeof(object*));
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		objects_allocated[i] = allocate_object(slab_desc_p, &cash);
+		objects_allocated[i] = cache_alloc(&cash);
 		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
 	}
 
@@ -70,7 +68,7 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
+		int fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
@@ -78,7 +76,7 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		objects_allocated[i] = allocate_object(slab_desc_p, &cash);
+		objects_allocated[i] = cache_alloc(&cash);
 		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
 	}
 
@@ -86,7 +84,7 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
+		int fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
@@ -94,7 +92,7 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		objects_allocated[i] = allocate_object(slab_desc_p, &cash);
+		objects_allocated[i] = cache_alloc(&cash);
 		printf("alloc object addr : %p, object counter : %d\n", objects_allocated[i], objects_allocated[i]->counter);
 	}
 
@@ -102,14 +100,14 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = free_object(slab_desc_p, objects_allocated[i], &cash);
+		int fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
 	printf("\n");
 
 
-	printf("slab destroyed with result : %d\n", slab_destroy(slab_desc_p, &cash));
+	printf("cache destroyed with result : %d\n", cache_destroy(&cash));
 
 	return 0;
 }

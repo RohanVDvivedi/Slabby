@@ -83,7 +83,7 @@ void* cache_alloc(cache* cachep)
 	return allocate_object(slab_desc_p, cachep);
 }
 
-void cache_free(cache* cachep, void* obj)
+int cache_free(cache* cachep, void* obj)
 {
 	// get the page that contains the object
 	void* page_addr = (void*)(((uintptr_t)obj) & 0xfff);
@@ -104,7 +104,7 @@ void cache_free(cache* cachep, void* obj)
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
 	}
 
-	free_object(slab_desc_p, obj, cachep);
+	return free_object(slab_desc_p, obj, cachep);
 }
 
 void cache_grow(cache* cachep)
