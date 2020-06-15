@@ -27,11 +27,6 @@ void init(void* obj, size_t object_size)
 	memset(((object*)obj)->bhoy, 0, 10);
 }
 
-void recycle(void* obj, size_t object_size)
-{
-	((object*)obj)->counter++;
-}
-
 void deinit(void* obj, size_t object_size)
 {
 	pthread_mutex_destroy(&(((object*)obj)->lock));
@@ -48,14 +43,12 @@ int main()
 
 	cache cash;
 
-	cache_create(&cash, SLAB_SIZE, sizeof(object), init, recycle, deinit);
+	cache_create(&cash, SLAB_SIZE, sizeof(object), init, deinit);
 
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
 
 	printf("slab_size : %lu, object_size : %lu\n", cash.slab_size, cash.object_size);
-
-	printf("num_of_objects : %u\n\n", cash.objects_per_slab);
 
 	uint32_t objects_n = TEST_ALLOCS;
 
@@ -64,6 +57,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
+		objects_allocated[i]->counter++;
 		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
@@ -80,6 +74,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
+		objects_allocated[i]->counter++;
 		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
@@ -96,6 +91,7 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
+		objects_allocated[i]->counter++;
 		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
 	}
 
