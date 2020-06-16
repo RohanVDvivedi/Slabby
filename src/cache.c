@@ -98,11 +98,12 @@ void* cache_alloc(cache* cachep)
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
 	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % ((cachep->partial_slab_descs.node_count/3) + 1));
 
+	// lock the slab asap after you get the pointer to it
+	lock_slab(slab_desc_p);
+
 	// if there is only one object, on the slab allocate it and mave the slab to full list
 	if(slab_desc_p->free_objects == 1)
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->full_slab_descs));
-
-	lock_slab(slab_desc_p);
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
 
@@ -125,6 +126,9 @@ int cache_free(cache* cachep, void* obj)
 	if(slab_desc_p == NULL)
 		slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->partial_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
 
+	// lock the slab asap after you get the pointer to it
+	lock_slab(slab_desc_p);
+
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_list(&(cachep->full_slab_descs), slab_desc_p))
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
@@ -134,7 +138,8 @@ int cache_free(cache* cachep, void* obj)
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
 	}
 
-	lock_slab(slab_desc_p);
+	if(cachep->partial_slab_descs.node_count < cachep->free_slab_descs.node_count)
+		cache_reap_unsafe(cachep);
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
 
@@ -165,12 +170,10 @@ int cache_destroy(cache* cachep)
 	if(cachep->partial_slab_descs.node_count || cachep->full_slab_descs.node_count)
 		return 0;
 
+	int reaped = 0;
+
 	while(!is_linkedlist_empty(&(cachep->free_slab_descs)))
-	{
-		slab_desc* slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
-		remove_head(&(cachep->free_slab_descs));
-		slab_destroy(slab_desc_p, cachep);
-	}
+		reaped += cache_reap_unsafe(cachep);
 
 	pthread_mutex_destroy(&(cachep->free_list_lock));
 	pthread_mutex_destroy(&(cachep->partial_list_lock));
@@ -178,5 +181,5 @@ int cache_destroy(cache* cachep)
 
 	pthread_mutex_destroy(&(cachep->cache_lock));
 
-	return 1;
+	return 1 + reaped;
 }
