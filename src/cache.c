@@ -60,16 +60,10 @@ void cache_create(	cache* cachep,
 
 	// always a multiple of 4096
 	cachep->slab_size = ((slab_size/4096)*4096) + ((slab_size%4096)?4096:0);
-
 	cachep->object_size = object_size;
 
-	pthread_mutex_init(&(cachep->free_list_lock), NULL);
 	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
-
-	pthread_mutex_init(&(cachep->partial_list_lock), NULL);
 	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node));
-
-	pthread_mutex_init(&(cachep->full_list_lock), NULL);
 	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	cachep->init = init;
@@ -174,10 +168,6 @@ int cache_destroy(cache* cachep)
 
 	while(!is_linkedlist_empty(&(cachep->free_slab_descs)))
 		reaped += cache_reap_unsafe(cachep);
-
-	pthread_mutex_destroy(&(cachep->free_list_lock));
-	pthread_mutex_destroy(&(cachep->partial_list_lock));
-	pthread_mutex_destroy(&(cachep->full_list_lock));
 
 	pthread_mutex_destroy(&(cachep->cache_lock));
 

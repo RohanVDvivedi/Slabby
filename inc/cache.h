@@ -13,13 +13,10 @@ struct cache
 {
 	pthread_mutex_t	cache_lock;		// allows you to selectively take all locks on the lists and return which ever are not required
 
-	pthread_mutex_t	free_list_lock;		// allows mutually exclusive access to the free slabs list
 	linkedlist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
-	pthread_mutex_t	partial_list_lock;	// allows mutually exclusive access to the partial slabs list
 	linkedlist partial_slab_descs;		// list of partial slabs, for further allocation
 
-	pthread_mutex_t full_list_lock; 	// allows mutually exclusive access to the full slabs list
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
 	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
