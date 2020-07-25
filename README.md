@@ -8,4 +8,4 @@ setup instructions
  * git clone https://github.com/RohanVDvivedi/Sloppy.git
  * cd Sloppy
  * sudo make clean install
- * add "-lsloppy" linker flag, while compiling your application
+ * add "-lsloppy -lpthread -lcutlery" linker flag, while compiling your application
