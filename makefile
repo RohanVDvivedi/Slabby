@@ -20,7 +20,7 @@ BINARY:=${BIN_DIR}/sloppy.out
 # compiler flags
 CFLAGS=-Wall -O3 -I${INC_DIR}
 # linker flags, this will used to compile the binary
-LFLAGS=-lsloppy -lpthread -lcutlery
+LFLAGS=-L${LIB_DIR} -lsloppy -lpthread -lcutlery
 
 # rule to make the object directory
 ${OBJ_DIR} :
