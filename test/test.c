@@ -34,7 +34,7 @@ void deinit(void* obj, size_t object_size)
 
 #define SLAB_SIZE (4096 * 1)
 
-#define TEST_ALLOCS 100
+#define TEST_ALLOCS 80
 
 int main()
 {
