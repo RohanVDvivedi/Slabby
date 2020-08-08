@@ -90,7 +90,7 @@ void* cache_alloc(cache* cachep)
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % ((cachep->partial_slab_descs.node_count/3) + 1));
+	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % ((cachep->partial_slabs/3) + 1));
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
@@ -140,7 +140,7 @@ int cache_free(cache* cachep, void* obj)
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
 	}
 
-	if(cachep->partial_slab_descs.node_count < cachep->free_slab_descs.node_count)
+	if(cachep->partial_slabs < cachep->free_slabs)
 		cache_reap_unsafe(cachep);
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
@@ -169,7 +169,7 @@ int cache_reap(cache* cachep)
 
 int cache_destroy(cache* cachep)
 {
-	if(cachep->partial_slab_descs.node_count || cachep->full_slab_descs.node_count)
+	if(cachep->partial_slabs || cachep->full_slabs)
 		return 0;
 
 	int reaped = 0;
