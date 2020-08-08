@@ -29,6 +29,7 @@ static void cache_grow_unsafe(cache* cachep)
 {
 	slab_desc* slab_desc_p = slab_create(cachep);
 	insert_head(&(cachep->free_slab_descs), slab_desc_p);
+	cachep->free_slabs++;
 }
 
 static int cache_reap_unsafe(cache* cachep)
@@ -38,6 +39,7 @@ static int cache_reap_unsafe(cache* cachep)
 	{
 		slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
 		remove_head(&(cachep->free_slab_descs));
+		cachep->free_slabs--;
 	}
 	if(slab_desc_p)
 	{
@@ -86,6 +88,8 @@ void* cache_alloc(cache* cachep)
 
 		// transfer only one slab from free to partial
 		transfer_a_to_b_head(get_head(&(cachep->free_slab_descs)), &(cachep->free_slab_descs), &(cachep->partial_slab_descs));
+		cachep->free_slabs--;
+		cachep->partial_slabs++;
 	}
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
@@ -97,7 +101,11 @@ void* cache_alloc(cache* cachep)
 
 	// if there is only one object, on the slab allocate it and mave the slab to full list
 	if(slab_desc_p->free_objects == 1)
+	{
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->full_slab_descs));
+		cachep->partial_slabs--;
+		cachep->full_slabs++;
+	}
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
 
@@ -133,11 +141,19 @@ int cache_free(cache* cachep, void* obj)
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_full_slabs)
+	{
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
+		cachep->full_slabs--;
+		cachep->partial_slabs++;
+	}
 	else if(exists_partial_slabs)
 	{
 		if(slab_desc_p->free_objects == number_of_objects_per_slab(cachep) - 1)
+		{
 			transfer_a_to_b_tail(slab_desc_p, &(cachep->partial_slab_descs), &(cachep->free_slab_descs));
+			cachep->partial_slabs--;
+			cachep->free_slabs++;
+		}
 	}
 
 	if(cachep->partial_slabs < cachep->free_slabs)
