@@ -64,8 +64,11 @@ void cache_create(	cache* cachep,
 	cachep->slab_size = ((slab_size/4096)*4096) + ((slab_size%4096)?4096:0);
 	cachep->object_size = object_size;
 
+	cachep->free_slabs = 0;
 	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
+	cachep->partial_slabs = 0;
 	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node));
+	cachep->full_slabs = 0;
 	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node));
 
 	cachep->init = init;
@@ -94,7 +97,8 @@ void* cache_alloc(cache* cachep)
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), ((unsigned int)pthread_self()) % (cachep->partial_slabs/3));
+	unsigned int slab_to_pick = (((unsigned int)pthread_self()) % cachep->partial_slabs)/3;
+	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), slab_to_pick);
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
