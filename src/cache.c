@@ -1,5 +1,8 @@
 #include<cache.h>
 
+#include<slab.h>
+
+#include<stdint.h>
 #include<stddef.h>
 
 #define min(a,b) (((a)<(b))?(a):(b))

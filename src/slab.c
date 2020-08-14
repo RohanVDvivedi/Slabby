@@ -3,6 +3,7 @@
 #include<cache.h>
 #include<bitmap.h>
 
+#include<stdint.h> 
 #include<strings.h>  /* ffs */
 #include<sys/mman.h> /*mmap munmap*/
 

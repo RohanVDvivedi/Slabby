@@ -2,9 +2,10 @@
 #define SLAB_H
 
 #include<pthread.h>
-#include<stdint.h> 
 
 #include<linkedlist.h>
+
+#include<stdint.h>
 
 // slab_desc is short for slab_description
 // this structure is always present at the end of the slab

@@ -1,11 +1,9 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include<pthread.h>
 #include<stdio.h>
-#include<stdlib.h>
-#include<stdint.h>
 
-#include<slab.h>
 #include<linkedlist.h>
 
 typedef struct cache cache;
