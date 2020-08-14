@@ -1,5 +1,6 @@
 #include<cache.h>
 
+#include<stdint.h>
 #include<string.h>
 #include<alloca.h>
 
@@ -38,7 +39,7 @@ void deinit(void* obj, size_t object_size)
 int main()
 {
 	printf("cache structure size : %lu\n", sizeof(cache));
-	printf("slab  structure size : %lu\n\n\n", sizeof(slab_desc));
+	//printf("slab  structure size : %lu\n\n\n", sizeof(slab_desc));
 
 	cache cash;
 
