@@ -2,7 +2,6 @@
 
 #include<string.h>
 #include<alloca.h>
-#include<pthread.h>
 
 typedef struct object object;
 struct object
