@@ -18,13 +18,13 @@ uint32_t number_of_objects_per_slab(cache* cachep)
 
 static void transfer_a_to_b_head(const void* slab_desc_p, linkedlist* a, linkedlist* b)
 {
-	remove_from_list(a, slab_desc_p);
+	remove_from_linkedlist(a, slab_desc_p);
 	insert_head(b, slab_desc_p);
 }
 
 static void transfer_a_to_b_tail(const void* slab_desc_p, linkedlist* a, linkedlist* b)
 {
-	remove_from_list(a, slab_desc_p);
+	remove_from_linkedlist(a, slab_desc_p);
 	insert_tail(b, slab_desc_p);
 }
 
@@ -134,10 +134,10 @@ int cache_free(cache* cachep, void* obj)
 	int exists_partial_slabs = 0;
 
 	// find some way to find the slab descriptor on which the cureent object is residing
-	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
+	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_linkedlist(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
 	if(slab_desc_p == NULL)
 	{
-		slab_desc_p = (slab_desc*) find_equals_in_list(&(cachep->partial_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
+		slab_desc_p = (slab_desc*) find_equals_in_linkedlist(&(cachep->partial_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
 		exists_partial_slabs = 1;
 	}
 	else
