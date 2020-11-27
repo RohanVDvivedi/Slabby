@@ -38,7 +38,7 @@ static void cache_grow_unsafe(cache* cachep)
 static int cache_reap_unsafe(cache* cachep)
 {
 	slab_desc* slab_desc_p = NULL;
-	if(!is_linkedlist_empty(&(cachep->free_slab_descs)))
+	if(!is_empty_linkedlist(&(cachep->free_slab_descs)))
 	{
 		slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
 		remove_head(&(cachep->free_slab_descs));
@@ -82,10 +82,10 @@ void* cache_alloc(cache* cachep)
 {
 	pthread_mutex_lock(&(cachep->cache_lock));
 
-	if(is_linkedlist_empty(&(cachep->partial_slab_descs)))
+	if(is_empty_linkedlist(&(cachep->partial_slab_descs)))
 	{
 		// grow the cache if the free slabs list is also empty
-		if(is_linkedlist_empty(&(cachep->free_slab_descs)))
+		if(is_empty_linkedlist(&(cachep->free_slab_descs)))
 		{
 			// increment the free slab list by 2
 			cache_grow_unsafe(cachep);
@@ -197,7 +197,7 @@ int cache_destroy(cache* cachep)
 
 	int reaped = 0;
 
-	while(!is_linkedlist_empty(&(cachep->free_slab_descs)))
+	while(!is_empty_linkedlist(&(cachep->free_slab_descs)))
 		reaped += cache_reap_unsafe(cachep);
 
 	pthread_mutex_destroy(&(cachep->cache_lock));
