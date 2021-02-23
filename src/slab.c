@@ -14,7 +14,7 @@ slab_desc* slab_create(cache* cachep)
 	uint32_t objects_per_slab = number_of_objects_per_slab(cachep);
 
 	// mmap memory equivalent to the size of slab
-	void* slab = mmap(NULL, cachep->slab_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED | MAP_POPULATE, 0, 0);
+	void* slab = mmap(NULL, cachep->slab_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
 
 	// create slab descriptor at the end of the slab
 	slab_desc* slab_desc_p = (slab + cachep->slab_size) - (bitmap_size_in_bytes(objects_per_slab) + sizeof(slab_desc));
