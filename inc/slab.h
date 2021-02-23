@@ -34,7 +34,7 @@ struct slab_desc
 	// only 1 bit is being used to represent if an object is allocated or not
 	// contrary to bonvick's slab alocation where a stack of offsets were used
 	// 1 means free object, 0 means occupied in the bitmap
-	uint8_t free_bitmap[];
+	char free_bitmap[];
 };
 
 typedef struct cache cache;
