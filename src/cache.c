@@ -2,7 +2,6 @@
 
 #include<slab.h>
 
-#include<stdint.h>
 #include<stddef.h>
 
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -125,35 +124,30 @@ void* cache_alloc(cache* cachep)
 
 int cache_free(cache* cachep, void* obj)
 {
-	// get the page that contains the object
-	void* page_addr = (void*)(((uintptr_t)obj) & ~(0xfff));
-
 	pthread_mutex_lock(&(cachep->cache_lock));
 
-	int exists_full_slabs = 0;
-	int exists_partial_slabs = 0;
+	int exists_in_full_slabs = 0;
+	int exists_in_partial_slabs = 0;
 
 	// find some way to find the slab descriptor on which the cureent object is residing
-	slab_desc* slab_desc_p = (slab_desc*) find_equals_in_linkedlist(&(cachep->full_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
-	if(slab_desc_p == NULL)
-	{
-		slab_desc_p = (slab_desc*) find_equals_in_linkedlist(&(cachep->partial_slab_descs), page_addr, (int (*)(const void *, const void *))is_inside_slab);
-		exists_partial_slabs = 1;
-	}
+	void* slab = (obj / cachep->slab_size) * cachep->slab_size;
+	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
+	if(slab_desc_p->free_objects > 0)
+		exists_in_partial_slabs = 1;
 	else
-		exists_full_slabs = 1;
+		exists_in_full_slabs = 1;
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
 
 	// if it is in full slabs description, move it to the end of the partial list
-	if(exists_full_slabs)
+	if(exists_in_full_slabs)
 	{
 		transfer_a_to_b_tail(slab_desc_p, &(cachep->full_slab_descs), &(cachep->partial_slab_descs));
 		cachep->full_slabs--;
 		cachep->partial_slabs++;
 	}
-	else if(exists_partial_slabs)
+	else if(exists_in_partial_slabs)
 	{
 		if(slab_desc_p->free_objects == number_of_objects_per_slab(cachep) - 1)
 		{

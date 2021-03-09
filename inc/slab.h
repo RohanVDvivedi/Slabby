@@ -38,6 +38,11 @@ struct slab_desc
 typedef struct cache cache;
 struct cache;
 
+// to get slab_desc pointer from slab_memory pointer
+slab_desc* get_slab_desc(void* slab, cache* cachep);
+// to get slab_memory pointer from slab_desc pointer
+void* get_slab_memory(slab_desc* slab_desc_p);
+
 slab_desc* slab_create(cache* cachep);
 
 void* allocate_object(slab_desc* slab_desc_p, cache* cachep);
