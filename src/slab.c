@@ -8,6 +8,17 @@
 
 unsigned int number_of_objects_per_slab(cache* cachep);
 
+slab_desc* get_slab_desc(void* slab, cache* cachep)
+{
+	unsigned int objects_per_slab = number_of_objects_per_slab(cachep);
+	return (slab + cachep->slab_size) - (sizeof(slab_desc) + bitmap_size_in_bytes(objects_per_slab));
+}
+
+void* get_slab_memory(slab_desc* slab_desc_p)
+{
+	return slab_desc_p->objects;
+}
+
 slab_desc* slab_create(cache* cachep)
 {
 	unsigned int objects_per_slab = number_of_objects_per_slab(cachep);
@@ -16,7 +27,7 @@ slab_desc* slab_create(cache* cachep)
 	void* slab = aligned_alloc(cachep->slab_size, cachep->slab_size);
 
 	// create slab descriptor at the end of the slab
-	slab_desc* slab_desc_p = (slab + cachep->slab_size) - (bitmap_size_in_bytes(objects_per_slab) + sizeof(slab_desc));
+	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
 
 	// initialize attributes, note : slab_desc object is kept at the end of the slab
 	// slab objects always start at the beginning
@@ -108,8 +119,9 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 
 	pthread_mutex_destroy(&(slab_desc_p->slab_lock));
 
-	// munmap slab memory
-	free(slab_desc_p->objects);
+	// free slab memory
+	void* slab = get_slab_memory(slab_desc_p);
+	free(slab);
 
 	return 1;
 }
