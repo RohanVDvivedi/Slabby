@@ -8,7 +8,7 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
-uint32_t number_of_objects_per_slab(cache* cachep)
+unsigned int number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
 	// divided by the number of bits that will be occupied by the object

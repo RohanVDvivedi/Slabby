@@ -5,8 +5,6 @@
 
 #include<linkedlist.h>
 
-#include<stdint.h>
-
 // slab_desc is short for slab_description
 // this structure is always present at the end of the slab
 // a slab is a group of n contigous 4KB pages
@@ -26,10 +24,10 @@ struct slab_desc
 	void* objects;
 
 	// free objects on the slab
-	uint32_t free_objects;
+	unsigned int free_objects;
 
 	// this is the index of the last allocated object
-	uint32_t last_allocated_object;
+	unsigned int last_allocated_object;
 
 	// only 1 bit is being used to represent if an object is allocated or not
 	// contrary to bonvick's slab alocation where a stack of offsets were used
