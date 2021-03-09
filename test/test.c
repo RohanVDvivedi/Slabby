@@ -39,7 +39,7 @@ void deinit(void* obj, size_t object_size)
 int main()
 {
 	printf("cache structure size : %lu\n", sizeof(cache));
-	//printf("slab  structure size : %lu\n\n\n", sizeof(slab_desc));
+	printf("slab  structure size : %lu\n\n\n", sizeof(slab_desc));
 
 	cache cash;
 
@@ -48,7 +48,7 @@ int main()
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
 
-	printf("slab_size : %lu, object_size : %lu\n", cash.slab_size, cash.object_size);
+	printf("slab_size : %lu, object_size : %lu, objects_per_slab %u\n", cash.slab_size, cash.object_size, number_of_objects_per_slab(&cash));
 
 	uint32_t objects_n = TEST_ALLOCS;
 
