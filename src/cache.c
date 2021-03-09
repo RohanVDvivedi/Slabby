@@ -2,6 +2,7 @@
 
 #include<slab.h>
 
+#include<stdint.h>
 #include<stddef.h>
 
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -130,7 +131,7 @@ int cache_free(cache* cachep, void* obj)
 	int exists_in_partial_slabs = 0;
 
 	// find some way to find the slab descriptor on which the cureent object is residing
-	void* slab = (obj / cachep->slab_size) * cachep->slab_size;
+	void* slab = obj - (((uintptr_t)obj) % cachep->slab_size);
 	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
 	if(slab_desc_p->free_objects > 0)
 		exists_in_partial_slabs = 1;
