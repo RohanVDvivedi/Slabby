@@ -4,6 +4,8 @@
 #include<string.h>
 #include<alloca.h>
 
+unsigned int number_of_objects_per_slab(cache* cachep);
+
 typedef struct object object;
 struct object
 {
