@@ -64,12 +64,15 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 
 int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 {
-	if(!(slab_desc_p->objects <= object && object < ((void*)slab_desc_p)))
+	// if the object is not in required range, return 0 (object not freed)
+	if(!((slab_desc_p->objects <= object) && (object < ((void*)slab_desc_p))))
 		return 0;
 
+	// object must be a multiple of object_size away from the first object in the slab
 	if(((((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) % cachep->object_size))
 		return 0;
 
+	// calculate the index of the object
 	unsigned int object_index = (((uintptr_t)object) - ((uintptr_t)slab_desc_p->objects)) / cachep->object_size;
 
 	// this effectively lets us know that there is a free object close by the last allocated index
