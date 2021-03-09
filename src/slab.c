@@ -56,7 +56,12 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 	// get a free object if there exists any
 	if(slab_desc_p->free_objects)
 	{
+		// find the first free object using the ffs on the bitmap
 		unsigned int object_index = find_first_set(slab_desc_p->free_bitmap, slab_desc_p->last_allocated_object, objects_per_slab);
+		// a value out of bounds mean that we need to start over 
+		if(object_index >= objects_per_slab)
+			object_index = find_first_set(slab_desc_p->free_bitmap, 0, objects_per_slab);
+
 
 		// this effectively lets us know that there is a free object close by the last allocated index
 		// there is generally a free object close by
