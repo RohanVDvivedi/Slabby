@@ -85,6 +85,14 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	// calculate the index of the object
 	unsigned int object_index = (object - slab_desc_p->objects) / cachep->object_size;
 
+	// object_index must be in range of indexes possible on this slab
+	if(object_index >= number_of_objects_per_slab(cachep))
+		return 0;
+
+	// if the object to be freed must not be free
+	if(get_bit(slab_desc_p->free_bitmap, object_index))
+		return 0;
+
 	// this effectively lets us know that there is a free object close by the last allocated index
 	if(slab_desc_p->free_objects == 0)
 		slab_desc_p->last_allocated_object = object_index;
