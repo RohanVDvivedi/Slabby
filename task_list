@@ -1,1 +1,5 @@
  * use aligned allocations for slabs area to perform O(1) operation to find slab/cache to free the corresponding memory object
+
+ * create a malloc shim for the library, to use it with regular programs.
+
+ * modify test cases to run in multiple runs to allocate and deallocate memory
