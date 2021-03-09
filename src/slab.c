@@ -5,7 +5,7 @@
 
 #include<stdint.h> 
 #include<strings.h>  /* ffs */
-#include<sys/mman.h> /*mmap munmap*/
+#include<stdlib.h> /*aligned_alloc and free*/
 
 uint32_t number_of_objects_per_slab(cache* cachep);
 
@@ -13,8 +13,8 @@ slab_desc* slab_create(cache* cachep)
 {
 	uint32_t objects_per_slab = number_of_objects_per_slab(cachep);
 
-	// mmap memory equivalent to the size of slab
-	void* slab = mmap(NULL, cachep->slab_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_POPULATE, -1, 0);
+	// mmap memory equivalent to the size of slab, and aligned to slize of slab
+	void* slab = aligned_alloc(cachep->slab_size, cachep->slab_size);
 
 	// create slab descriptor at the end of the slab
 	slab_desc* slab_desc_p = (slab + cachep->slab_size) - (bitmap_size_in_bytes(objects_per_slab) + sizeof(slab_desc));
@@ -106,8 +106,8 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 
 	pthread_mutex_destroy(&(slab_desc_p->slab_lock));
 
-	// munmap memory
-	munmap(slab_desc_p->objects, cachep->slab_size);
+	// munmap slab memory
+	free(slab_desc_p->objects);
 
 	return 1;
 }
