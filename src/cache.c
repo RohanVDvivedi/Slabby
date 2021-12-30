@@ -19,19 +19,19 @@ unsigned int number_of_objects_per_slab(cache* cachep)
 static void transfer_a_to_b_head(const void* slab_desc_p, linkedlist* a, linkedlist* b)
 {
 	remove_from_linkedlist(a, slab_desc_p);
-	insert_head(b, slab_desc_p);
+	insert_head_in_linkedlist(b, slab_desc_p);
 }
 
 static void transfer_a_to_b_tail(const void* slab_desc_p, linkedlist* a, linkedlist* b)
 {
 	remove_from_linkedlist(a, slab_desc_p);
-	insert_tail(b, slab_desc_p);
+	insert_tail_in_linkedlist(b, slab_desc_p);
 }
 
 static void cache_grow_unsafe(cache* cachep)
 {
 	slab_desc* slab_desc_p = slab_create(cachep);
-	insert_head(&(cachep->free_slab_descs), slab_desc_p);
+	insert_head_in_linkedlist(&(cachep->free_slab_descs), slab_desc_p);
 	cachep->free_slabs++;
 }
 
@@ -40,8 +40,8 @@ static int cache_reap_unsafe(cache* cachep)
 	slab_desc* slab_desc_p = NULL;
 	if(!is_empty_linkedlist(&(cachep->free_slab_descs)))
 	{
-		slab_desc_p = (slab_desc*) get_head(&(cachep->free_slab_descs));
-		remove_head(&(cachep->free_slab_descs));
+		slab_desc_p = (slab_desc*) get_head_of_linkedlist(&(cachep->free_slab_descs));
+		remove_head_from_linkedlist(&(cachep->free_slab_descs));
 		cachep->free_slabs--;
 	}
 	if(slab_desc_p)
@@ -93,7 +93,7 @@ void* cache_alloc(cache* cachep)
 		}
 
 		// transfer only one slab from free to partial
-		transfer_a_to_b_head(get_head(&(cachep->free_slab_descs)), &(cachep->free_slab_descs), &(cachep->partial_slab_descs));
+		transfer_a_to_b_head(get_head_of_linkedlist(&(cachep->free_slab_descs)), &(cachep->free_slab_descs), &(cachep->partial_slab_descs));
 		cachep->free_slabs--;
 		cachep->partial_slabs++;
 	}
@@ -101,7 +101,7 @@ void* cache_alloc(cache* cachep)
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
 	unsigned int slab_to_pick = (((unsigned int)pthread_self()) % cachep->partial_slabs)/3;
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head(&(cachep->partial_slab_descs), slab_to_pick);
+	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
