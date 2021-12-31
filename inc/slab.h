@@ -7,7 +7,7 @@
 
 // slab_desc is short for slab_description
 // this structure is always present at the end of the slab
-// a slab is a group of n contigous 4KB pages
+// a slab is a group of n contiguous 4KB pages
 
 typedef struct slab_desc slab_desc;
 struct slab_desc
