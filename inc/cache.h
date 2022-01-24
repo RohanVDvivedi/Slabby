@@ -9,7 +9,7 @@
 typedef struct cache cache;
 struct cache
 {
-	pthread_mutex_t	cache_lock;		// allows you to selectively take all locks on the lists and return which ever are not required
+	pthread_mutex_t	cache_lock;		// protects all the three linkedlists and their corresponding slab counts from concurrent access
 
 	unsigned int free_slabs;
 	linkedlist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
