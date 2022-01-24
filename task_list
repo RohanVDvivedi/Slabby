@@ -1,0 +1,2 @@
+ * add a functionality to check total memory hoarded
+ * use a singlylist to store free slabs, since they are always accessed from head
