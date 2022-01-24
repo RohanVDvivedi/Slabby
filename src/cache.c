@@ -64,7 +64,7 @@ void cache_create(	cache* cachep,
 	pthread_mutex_init(&(cachep->cache_lock), NULL);
 
 	// always a multiple of 4096
-	cachep->slab_size = ((slab_size/4096)*4096) + ((slab_size%4096)?4096:0);
+	cachep->slab_size = (((slab_size-4095)/4096)*4096);	// equivalent to multiple of 4096 more than or equal to slab_size
 	cachep->object_size = object_size;
 
 	cachep->free_slabs = 0;
@@ -130,16 +130,18 @@ int cache_free(cache* cachep, void* obj)
 	int exists_in_full_slabs = 0;
 	int exists_in_partial_slabs = 0;
 
-	// find some way to find the slab descriptor on which the cureent object is residing
+	// since all the slabs are aligned to their sizes, we get the pointer to the slab of this object by :
 	void* slab = obj - (((uintptr_t)obj) % cachep->slab_size);
 	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
+
+	// lock the slab asap after you get the pointer to it
+	lock_slab(slab_desc_p);
+
+	// figure out the linkedlist of this slab
 	if(slab_desc_p->free_objects > 0)
 		exists_in_partial_slabs = 1;
 	else
 		exists_in_full_slabs = 1;
-
-	// lock the slab asap after you get the pointer to it
-	lock_slab(slab_desc_p);
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_full_slabs)
