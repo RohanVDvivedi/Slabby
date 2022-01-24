@@ -1,5 +1,5 @@
 # project name
-PROJECT_NAME:=sloppy
+PROJECT_NAME:=slabby
 
 # this is the place where we download in your system
 DOWNLOAD_DIR:=/usr/local
