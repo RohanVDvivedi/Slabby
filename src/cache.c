@@ -19,21 +19,17 @@ unsigned int number_of_objects_per_slab(cache* cachep)
 static void cache_grow_unsafe(cache* cachep)
 {
 	slab_desc* slab_desc_p = slab_create(cachep);
-	insert_head_in_linkedlist(&(cachep->free_slab_descs), slab_desc_p);
+	insert_head_in_singlylist(&(cachep->free_slab_descs), slab_desc_p);
 	cachep->free_slabs++;
 }
 
 static int cache_reap_unsafe(cache* cachep)
 {
-	slab_desc* slab_desc_p = NULL;
-	if(!is_empty_linkedlist(&(cachep->free_slab_descs)))
+	if(!is_empty_singlylist(&(cachep->free_slab_descs)))
 	{
-		slab_desc_p = (slab_desc*) get_head_of_linkedlist(&(cachep->free_slab_descs));
-		remove_head_from_linkedlist(&(cachep->free_slab_descs));
+		slab_desc* slab_desc_p = (slab_desc*) get_head_of_singlylist(&(cachep->free_slab_descs));
+		remove_head_from_singlylist(&(cachep->free_slab_descs));
 		cachep->free_slabs--;
-	}
-	if(slab_desc_p)
-	{
 		slab_destroy(slab_desc_p, cachep);
 		return 1;
 	}
@@ -56,7 +52,7 @@ void cache_create(	cache* cachep,
 	cachep->object_size = object_size;
 
 	cachep->free_slabs = 0;
-	initialize_linkedlist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
+	initialize_singlylist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
 	cachep->partial_slabs = 0;
 	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node));
 	cachep->full_slabs = 0;
@@ -73,7 +69,7 @@ void* cache_alloc(cache* cachep)
 	if(is_empty_linkedlist(&(cachep->partial_slab_descs)))
 	{
 		// grow the cache if the free slabs list is also empty
-		if(is_empty_linkedlist(&(cachep->free_slab_descs)))
+		if(is_empty_singlylist(&(cachep->free_slab_descs)))
 		{
 			// increment the free slab list by 2
 			cache_grow_unsafe(cachep);
@@ -81,8 +77,8 @@ void* cache_alloc(cache* cachep)
 		}
 
 		// transfer only one slab from free to partial
-		const slab_desc* slab_desc_to_move = get_head_of_linkedlist(&(cachep->free_slab_descs));
-		remove_from_linkedlist(&(cachep->free_slab_descs), slab_desc_to_move);
+		const slab_desc* slab_desc_to_move = get_head_of_singlylist(&(cachep->free_slab_descs));
+		remove_head_from_singlylist(&(cachep->free_slab_descs));
 		cachep->free_slabs--;
 		insert_head_in_linkedlist(&(cachep->partial_slab_descs), slab_desc_to_move);
 		cachep->partial_slabs++;
@@ -148,7 +144,7 @@ int cache_free(cache* cachep, void* obj)
 		{
 			remove_from_linkedlist(&(cachep->partial_slab_descs), slab_desc_p);
 			cachep->partial_slabs--;
-			insert_tail_in_linkedlist(&(cachep->free_slab_descs), slab_desc_p);
+			insert_head_in_singlylist(&(cachep->free_slab_descs), slab_desc_p);
 			cachep->free_slabs++;
 		}
 	}
@@ -187,7 +183,7 @@ int cache_destroy(cache* cachep)
 
 	int reaped = 0;
 
-	while(!is_empty_linkedlist(&(cachep->free_slab_descs)))
+	while(!is_empty_singlylist(&(cachep->free_slab_descs)))
 		reaped += cache_reap_unsafe(cachep);
 
 	pthread_mutex_destroy(&(cachep->cache_lock));

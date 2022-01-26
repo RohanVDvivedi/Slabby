@@ -4,6 +4,7 @@
 #include<pthread.h>
 #include<stdio.h>
 
+#include<singlylist.h>
 #include<linkedlist.h>
 
 typedef struct cache cache;
@@ -12,7 +13,7 @@ struct cache
 	pthread_mutex_t	cache_lock;		// protects all the three linkedlists and their corresponding slab counts from concurrent access
 
 	unsigned int free_slabs;
-	linkedlist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
+	singlylist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
 	unsigned int partial_slabs;
 	linkedlist partial_slab_descs;		// list of partial slabs, for further allocation
