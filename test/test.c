@@ -45,7 +45,7 @@ int main()
 
 	cache cash;
 
-	cache_create(&cash, SLAB_SIZE, sizeof(object), init, deinit);
+	cache_create(&cash, SLAB_SIZE, sizeof(object), NO_MAX_MEMORY_LIMIT, init, deinit);
 
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
@@ -67,7 +67,9 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = cache_free(&cash, objects_allocated[i]);
+		int fr = 0;
+		if(objects_allocated[i])
+			fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
