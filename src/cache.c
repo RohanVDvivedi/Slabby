@@ -16,11 +16,20 @@ unsigned int number_of_objects_per_slab(cache* cachep)
 	return ( 8 * (cachep->slab_size - sizeof(slab_desc)) ) / (8 * cachep->object_size + 1);
 }
 
-static void cache_grow_unsafe(cache* cachep)
+static size_t get_cache_memory_hoarded_unsafe(cache* cachep)
 {
+	return (cachep->free_slabs + cachep->partial_slabs + cachep->full_slabs) * cachep->slab_size;
+}
+
+static int cache_grow_unsafe(cache* cachep)
+{
+	if(cachep->max_memory_hoarding != 0 && cachep->max_memory_hoarding >= get_cache_memory_hoarded_unsafe(cachep))
+		return 0;
+
 	slab_desc* slab_desc_p = slab_create(cachep);
 	insert_head_in_singlylist(&(cachep->free_slab_descs), slab_desc_p);
 	cachep->free_slabs++;
+	return 1;
 }
 
 static int cache_reap_unsafe(cache* cachep)
@@ -41,6 +50,8 @@ void cache_create(	cache* cachep,
 					size_t slab_size,
 					size_t object_size,
 
+					size_t max_memory_hoarding,
+
 					void (*init)(void*, size_t),
 					void (*deinit)(void*, size_t)
 				)
@@ -48,8 +59,9 @@ void cache_create(	cache* cachep,
 	pthread_mutex_init(&(cachep->cache_lock), NULL);
 
 	// always a multiple of 4096
-	cachep->slab_size = (((slab_size-4095)/4096)*4096);	// equivalent to multiple of 4096 more than or equal to slab_size
+	cachep->slab_size = (((slab_size+4095)/4096)*4096);	// equivalent to multiple of 4096 more than or equal to slab_size
 	cachep->object_size = object_size;
+	cachep->max_memory_hoarding = (((max_memory_hoarding+4095)/4096)*4096);
 
 	cachep->free_slabs = 0;
 	initialize_singlylist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
@@ -71,8 +83,18 @@ void* cache_alloc(cache* cachep)
 		// grow the cache if the free slabs list is also empty
 		if(is_empty_singlylist(&(cachep->free_slab_descs)))
 		{
-			// increment the free slab list by 2
-			cache_grow_unsafe(cachep);
+			// increment the free slab list, by allocating a new slab
+			if(0 == cache_grow_unsafe(cachep))
+			{
+				// if we couldn't add a new slab then we can not allocate memory now
+				// since both partial_slabs and full_slabs count are 0
+				pthread_mutex_unlock(&(cachep->cache_lock));
+				return NULL;
+			}
+
+			// since we might need more memory in future
+			// we add one more slab
+			// this may or may not succeed, we don't care
 			cache_grow_unsafe(cachep);
 		}
 
@@ -149,14 +171,23 @@ int cache_free(cache* cachep, void* obj)
 		}
 	}
 
-	if(cachep->partial_slabs < cachep->free_slabs)
-		cache_reap_unsafe(cachep);
-
 	pthread_mutex_unlock(&(cachep->cache_lock));
 
 	int freed = free_object(slab_desc_p, obj, cachep);
 
 	unlock_slab(slab_desc_p);
+
+
+	// A small attempt to free up memory and return to OS
+	// if there are more free slabs then required
+	// this needs to be done separately of the freeing
+	// else we might end up freeing the free_slab from which we are about to free an object from
+	pthread_mutex_lock(&(cachep->cache_lock));
+
+	while(cachep->partial_slabs < cachep->free_slabs)
+		cache_reap_unsafe(cachep);
+
+	pthread_mutex_unlock(&(cachep->cache_lock));
 
 	return freed;
 }
@@ -194,7 +225,7 @@ int cache_destroy(cache* cachep)
 size_t get_cache_memory_hoarded(cache* cachep)
 {
 	pthread_mutex_lock(&(cachep->cache_lock));
-		size_t hoarded_memory = (cachep->free_slabs + cachep->partial_slabs + cachep->full_slabs) * cachep->slab_size;
+		size_t hoarded_memory = get_cache_memory_hoarded_unsafe(cachep);
 	pthread_mutex_unlock(&(cachep->cache_lock));
 	return hoarded_memory;
 }

@@ -7,6 +7,8 @@
 #include<singlylist.h>
 #include<linkedlist.h>
 
+#define NO_MAX_MEMORY_LIMIT 0
+
 typedef struct cache cache;
 struct cache
 {
@@ -26,6 +28,10 @@ struct cache
 
 	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
 
+	size_t max_memory_hoarding;	// this is the maximum memory that this cache will hoard to allocate objects
+	// if this limit is reached then the cache will not be allocating any further memory
+	// a max_memory_hoarding = 0, means that there is not limit in memory being used
+
 	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not
 
@@ -35,7 +41,7 @@ struct cache
 		// while size_t typed second parameter will the the object_size of the cache
 };
 
-void cache_create(cache* cachep, size_t slab_size, size_t object_size, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
+void cache_create(cache* cachep, size_t slab_size, size_t object_size, size_t max_memory_hoarding, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
 
 void* cache_alloc(cache* cachep);
 int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
