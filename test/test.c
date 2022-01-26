@@ -45,7 +45,7 @@ int main()
 
 	cache cash;
 
-	cache_create(&cash, SLAB_SIZE, sizeof(object), NO_MAX_MEMORY_LIMIT, init, deinit);
+	cache_create(&cash, SLAB_SIZE, sizeof(object), /*NO_MAX_MEMORY_LIMIT*/ 2 * 4096, init, deinit);
 
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
@@ -59,8 +59,13 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		objects_allocated[i]->counter++;
-		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
+		int counter = 0;
+		if(objects_allocated[i])
+		{
+			objects_allocated[i]->counter++;
+			counter = objects_allocated[i]->counter;
+		}
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], counter);
 	}
 
 	printf("\n");
@@ -78,8 +83,13 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		objects_allocated[i]->counter++;
-		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
+		int counter = 0;
+		if(objects_allocated[i])
+		{
+			objects_allocated[i]->counter++;
+			counter = objects_allocated[i]->counter;
+		}
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], counter);
 	}
 
 	printf("\n");
@@ -95,8 +105,13 @@ int main()
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
 		objects_allocated[i] = cache_alloc(&cash);
-		objects_allocated[i]->counter++;
-		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], objects_allocated[i]->counter);
+		int counter = 0;
+		if(objects_allocated[i])
+		{
+			objects_allocated[i]->counter++;
+			counter = objects_allocated[i]->counter;
+		}
+		printf("\t%u \t alloc object addr : %p, object counter : %d\n", i, objects_allocated[i], counter);
 	}
 
 	printf("\n");
