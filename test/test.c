@@ -96,7 +96,9 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = cache_free(&cash, objects_allocated[i]);
+		int fr = 0;
+		if(objects_allocated[i])
+			fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
@@ -118,7 +120,9 @@ int main()
 
 	for(uint32_t i = 0; i < objects_n; i++)
 	{
-		int fr = cache_free(&cash, objects_allocated[i]);
+		int fr = 0;
+		if(objects_allocated[i])
+			fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
