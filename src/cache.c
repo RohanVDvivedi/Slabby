@@ -190,3 +190,11 @@ int cache_destroy(cache* cachep)
 
 	return 1 + reaped;
 }
+
+size_t get_cache_memory_hoarded(cache* cachep)
+{
+	pthread_mutex_lock(&(cachep->cache_lock));
+		size_t hoarded_memory = (cachep->free_slabs + cachep->partial_slabs + cachep->full_slabs) * cachep->slab_size;
+	pthread_mutex_unlock(&(cachep->cache_lock));
+	return hoarded_memory;
+}

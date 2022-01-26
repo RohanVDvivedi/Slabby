@@ -45,6 +45,9 @@ int cache_reap(cache* cachep);						// returns 1, if a slab was reaped
 
 int cache_destroy(cache* cachep);
 
+size_t get_cache_memory_hoarded(cache* cachep);		// returns total memory that has been hoarded by this cache
+// it is equivalent to total_stabs * slab_size
+
 /*
 **	NO CONCURRENT CACHE CREATE AND DESTROY CALLS MUST BE MADE ON THE cache
 **	so cache must be created and destroyed by your application's main thread
