@@ -23,7 +23,7 @@ static size_t get_cache_memory_hoarded_unsafe(cache* cachep)
 
 static int cache_grow_unsafe(cache* cachep)
 {
-	if(cachep->max_memory_hoarding != 0 && cachep->max_memory_hoarding >= get_cache_memory_hoarded_unsafe(cachep))
+	if(cachep->max_memory_hoarding != 0 && cachep->max_memory_hoarding <= get_cache_memory_hoarded_unsafe(cachep))
 		return 0;
 
 	slab_desc* slab_desc_p = slab_create(cachep);
