@@ -43,7 +43,7 @@ struct cache
 
 void cache_create(cache* cachep, size_t slab_size, size_t object_size, size_t max_memory_hoarding, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
 
-void* cache_alloc(cache* cachep);
+void* cache_alloc(cache* cachep);					// returns non-NULL on success
 int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
 
 int cache_grow(cache* cachep);						// returns 1, if a free slab was added to cache
