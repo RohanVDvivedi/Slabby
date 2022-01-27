@@ -38,6 +38,17 @@ void deinit(void* obj, size_t object_size)
 
 #define TEST_ALLOCS 80
 
+// uncomment the below line to enable boundless memory allocation
+#define WITH_MAX_MEMORY_LIMIT
+
+
+// MEMORY_LIMIT to use will be decided on the basis of WITH_MAX_MEMORY_LIMIT
+#ifdef WITH_MAX_MEMORY_LIMIT
+	#define MEMORY_LIMIT (2 * 4096)
+#else
+	#define MEMORY_LIMIT NO_MAX_MEMORY_LIMIT
+#endif
+
 int main()
 {
 	printf("cache structure size : %lu\n\n", sizeof(cache));
@@ -45,7 +56,7 @@ int main()
 
 	cache cash;
 
-	cache_create(&cash, SLAB_SIZE, sizeof(object), /*NO_MAX_MEMORY_LIMIT*/ 2 * 4096, init, deinit);
+	cache_create(&cash, SLAB_SIZE, sizeof(object), MEMORY_LIMIT, init, deinit);
 
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
