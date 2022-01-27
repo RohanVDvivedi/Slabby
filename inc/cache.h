@@ -46,8 +46,8 @@ void cache_create(cache* cachep, size_t slab_size, size_t object_size, size_t ma
 void* cache_alloc(cache* cachep);
 int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
 
-void cache_grow(cache* cachep);
-int cache_reap(cache* cachep);						// returns 1, if a slab was reaped
+int cache_grow(cache* cachep);						// returns 1, if a free slab was added to cache
+int cache_reap(cache* cachep);						// returns 1, if a free slab was reaped
 
 int cache_destroy(cache* cachep);
 

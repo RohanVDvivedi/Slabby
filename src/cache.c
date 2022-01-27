@@ -192,11 +192,12 @@ int cache_free(cache* cachep, void* obj)
 	return freed;
 }
 
-void cache_grow(cache* cachep)
+int  cache_grow(cache* cachep)
 {
 	pthread_mutex_lock(&(cachep->cache_lock));
-		cache_grow_unsafe(cachep);
+		int grew = cache_grow_unsafe(cachep);
 	pthread_mutex_unlock(&(cachep->cache_lock));
+	return grew;
 }
 
 int cache_reap(cache* cachep)
