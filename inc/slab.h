@@ -24,10 +24,10 @@ struct slab_desc
 	void* objects;
 
 	// free objects on the slab
-	size_t free_objects;
+	cy_uint free_objects;
 
 	// this is the index of the last allocated object
-	size_t last_allocated_object;
+	cy_uint last_allocated_object;
 
 	// only 1 bit is being used to represent if an object is allocated or not
 	// contrary to bonvick's slab alocation where a stack of offsets were used
