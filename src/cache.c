@@ -8,7 +8,7 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
-cy_uint number_of_objects_per_slab(cache* cachep)
+size_t number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
 	// divided by the number of bits that will be occupied by the object
@@ -16,7 +16,7 @@ cy_uint number_of_objects_per_slab(cache* cachep)
 	return ( 8 * (cachep->slab_size - sizeof(slab_desc)) ) / (8 * cachep->object_size + 1);
 }
 
-static cy_uint get_cache_memory_hoarded_unsafe(cache* cachep)
+static size_t get_cache_memory_hoarded_unsafe(cache* cachep)
 {
 	return (cachep->free_slabs + cachep->partial_slabs + cachep->full_slabs) * cachep->slab_size;
 }
@@ -47,10 +47,10 @@ static int cache_reap_unsafe(cache* cachep)
 
 void cache_create(	cache* cachep,
 
-					cy_uint slab_size,
+					size_t slab_size,
 					size_t object_size,
 
-					cy_uint max_memory_hoarding,
+					size_t max_memory_hoarding,
 
 					void (*init)(void*, size_t),
 					void (*deinit)(void*, size_t)
@@ -108,7 +108,7 @@ void* cache_alloc(cache* cachep)
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
-	cy_uint slab_to_pick = (((cy_uint)pthread_self()) % cachep->partial_slabs)/3;
+	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
 	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
 	// lock the slab asap after you get the pointer to it
@@ -223,10 +223,10 @@ int cache_destroy(cache* cachep)
 	return 1 + reaped;
 }
 
-cy_uint get_cache_memory_hoarded(cache* cachep)
+size_t get_cache_memory_hoarded(cache* cachep)
 {
 	pthread_mutex_lock(&(cachep->cache_lock));
-		cy_uint hoarded_memory = get_cache_memory_hoarded_unsafe(cachep);
+		size_t hoarded_memory = get_cache_memory_hoarded_unsafe(cachep);
 	pthread_mutex_unlock(&(cachep->cache_lock));
 	return hoarded_memory;
 }

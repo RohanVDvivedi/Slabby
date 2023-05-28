@@ -4,7 +4,7 @@
 #include<string.h>
 #include<alloca.h>
 
-cy_uint number_of_objects_per_slab(cache* cachep);
+size_t number_of_objects_per_slab(cache* cachep);
 
 typedef struct object object;
 struct object
@@ -51,8 +51,8 @@ void deinit(void* obj, size_t object_size)
 
 int main()
 {
-	printf("cache structure size : %lu\n\n", sizeof(cache));
-	//printf("slab  structure size : %lu\n\n\n", sizeof(slab_desc));
+	printf("cache structure size : %zu\n\n", sizeof(cache));
+	//printf("slab  structure size : %zu\n\n\n", sizeof(slab_desc));
 
 	cache cash;
 
@@ -61,7 +61,7 @@ int main()
 	cash.slab_size = 4096;
 	cash.object_size = sizeof(object);
 
-	printf("slab_size : %" PRIu_cy_uint ", object_size : %lu, objects_per_slab %" PRIu_cy_uint "\n", cash.slab_size, cash.object_size, number_of_objects_per_slab(&cash));
+	printf("slab_size : %zu, object_size : %zu, objects_per_slab %zu\n", cash.slab_size, cash.object_size, number_of_objects_per_slab(&cash));
 
 	uint32_t objects_n = TEST_ALLOCS;
 

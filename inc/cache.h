@@ -14,21 +14,21 @@ struct cache
 {
 	pthread_mutex_t	cache_lock;		// protects all the three linkedlists and their corresponding slab counts from concurrent access
 
-	cy_uint free_slabs;
+	size_t free_slabs;
 	singlylist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
-	cy_uint partial_slabs;
+	size_t partial_slabs;
 	linkedlist partial_slab_descs;		// list of partial slabs, for further allocation
 
-	cy_uint full_slabs;
+	size_t full_slabs;
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
-	cy_uint slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
+	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
 								// greater than atleast 32 times the size of the object
 
 	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
 
-	cy_uint max_memory_hoarding;	// this is the maximum memory that this cache will hoard to allocate objects
+	size_t max_memory_hoarding;	// this is the maximum memory that this cache will hoard to allocate objects
 	// if this limit is reached then the cache will not be allocating any further memory
 	// a max_memory_hoarding = 0, means that there is not limit in memory being used
 
@@ -41,7 +41,7 @@ struct cache
 		// while size_t typed second parameter will the the object_size of the cache
 };
 
-void cache_create(cache* cachep, cy_uint slab_size, size_t object_size, cy_uint max_memory_hoarding, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
+void cache_create(cache* cachep, size_t slab_size, size_t object_size, size_t max_memory_hoarding, void (*init)(void*, size_t), void (*deinit)(void*, size_t));
 
 void* cache_alloc(cache* cachep);					// returns non-NULL on success
 int cache_free(cache* cachep, void* obj);			// returns true if the object was freed
@@ -51,7 +51,7 @@ int cache_reap(cache* cachep);						// returns 1, if a free slab was reaped
 
 int cache_destroy(cache* cachep);
 
-cy_uint get_cache_memory_hoarded(cache* cachep);	// returns total memory that has been hoarded by this cache
+size_t get_cache_memory_hoarded(cache* cachep);	// returns total memory that has been hoarded by this cache
 // it is equivalent to total_stabs * slab_size
 
 /*
