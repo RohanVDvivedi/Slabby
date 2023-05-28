@@ -8,7 +8,7 @@
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 
-unsigned int number_of_objects_per_slab(cache* cachep)
+size_t number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
 	// divided by the number of bits that will be occupied by the object
@@ -108,7 +108,7 @@ void* cache_alloc(cache* cachep)
 
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
-	unsigned int slab_to_pick = (((unsigned int)pthread_self()) % cachep->partial_slabs)/3;
+	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
 	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
 	// lock the slab asap after you get the pointer to it

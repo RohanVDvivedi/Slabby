@@ -14,13 +14,13 @@ struct cache
 {
 	pthread_mutex_t	cache_lock;		// protects all the three linkedlists and their corresponding slab counts from concurrent access
 
-	unsigned int free_slabs;
+	size_t free_slabs;
 	singlylist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
 
-	unsigned int partial_slabs;
+	size_t partial_slabs;
 	linkedlist partial_slab_descs;		// list of partial slabs, for further allocation
 
-	unsigned int full_slabs;
+	size_t full_slabs;
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
 	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
