@@ -27,6 +27,9 @@ static int cache_grow_unsafe(cache* cachep)
 		return 0;
 
 	slab_desc* slab_desc_p = slab_create(cachep);
+	if(slab_desc_p == NULL) // cache grow fails, if slab_create fails
+		return 0;
+
 	insert_head_in_singlylist(&(cachep->free_slab_descs), slab_desc_p);
 	cachep->free_slabs++;
 	return 1;
@@ -86,7 +89,7 @@ void* cache_alloc(cache* cachep)
 			// increment the free slab list, by allocating a new slab
 			if(0 == cache_grow_unsafe(cachep))
 			{
-				// if we couldn't add a new slab then we can not allocate memory now
+				// if we couldn't add a new slab (for any reason) then we can not allocate memory now
 				// since both partial_slabs and full_slabs count are 0
 				pthread_mutex_unlock(&(cachep->cache_lock));
 				return NULL;

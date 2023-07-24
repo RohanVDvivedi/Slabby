@@ -23,8 +23,12 @@ slab_desc* slab_create(cache* cachep)
 {
 	size_t objects_per_slab = number_of_objects_per_slab(cachep);
 
-	// mmap memory equivalent to the size of slab, and aligned to slize of slab
+	// allocate memory equivalent to the size of slab, and aligned to slize of slab
 	void* slab = aligned_alloc(cachep->slab_size, cachep->slab_size);
+
+	// fail if we fail to allocate memory for the slab
+	if(slab == NULL)
+		return NULL;
 
 	// create slab descriptor at the end of the slab
 	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
