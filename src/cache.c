@@ -112,7 +112,7 @@ void* cache_alloc(cache* cachep)
 	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
 	// at the same time we aim to not finish up all the slabs in the partial list at the same time
 	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
-	slab_desc* slab_desc_p = (slab_desc*) get_nth_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
+	slab_desc* slab_desc_p = (slab_desc*) get_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
