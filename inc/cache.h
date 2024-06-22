@@ -12,7 +12,7 @@
 typedef struct cache cache;
 struct cache
 {
-	pthread_mutex_t	cache_lock;		// protects all the three linkedlists and their corresponding slab counts from concurrent access
+	pthread_mutex_t	cache_lock;			// protects everything from concurrent access, single global lock for everything
 
 	size_t free_slabs;
 	singlylist free_slab_descs;			// list of free slabs ready to reap, no objects are currently in user space from here
