@@ -8,17 +8,6 @@
 
 size_t number_of_objects_per_slab(cache* cachep);
 
-slab_desc* get_slab_desc(void* slab, cache* cachep)
-{
-	size_t objects_per_slab = number_of_objects_per_slab(cachep);
-	return (slab + cachep->slab_size) - (sizeof(slab_desc) + bitmap_size_in_bytes(objects_per_slab));
-}
-
-void* get_slab_memory(slab_desc* slab_desc_p)
-{
-	return slab_desc_p->objects;
-}
-
 slab_desc* slab_create(cache* cachep)
 {
 	size_t objects_per_slab = number_of_objects_per_slab(cachep);
@@ -30,12 +19,12 @@ slab_desc* slab_create(cache* cachep)
 	if(slab == NULL)
 		return NULL;
 
-	// create slab descriptor at the end of the slab
-	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
+	// create slab descriptor at the front of the slab
+	slab_desc* slab_desc_p = slab;
 
-	// initialize attributes, note : slab_desc object is kept at the end of the slab
-	// slab objects always start at the beginning
-	slab_desc_p->objects = slab;
+	// initialize attributes, note : slab_desc object is kept at the fornt of the slab
+	// slab objects always start after the slab_desc, but these objects are pushed all way touching the end of the slab
+	slab_desc_p->objects = slab + cachep->slab_size - (objects_per_slab * cachep->object_size);
 	pthread_mutex_init(&(slab_desc_p->slab_lock), NULL);
 	initialize_llnode(&(slab_desc_p->slab_list_node));
 	slab_desc_p->free_objects = objects_per_slab;
@@ -138,7 +127,8 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 	pthread_mutex_destroy(&(slab_desc_p->slab_lock));
 
 	// free slab memory
-	void* slab = get_slab_memory(slab_desc_p);
+	// since slab_desc is at the beginning of the object, it is itself also the pointer to the slab memory
+	void* slab = slab_desc_p;
 	free(slab);
 
 	return 1;
