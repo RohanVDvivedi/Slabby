@@ -25,7 +25,6 @@ slab_desc* slab_create(cache* cachep)
 	// initialize attributes, note : slab_desc object is kept at the fornt of the slab
 	// slab objects always start after the slab_desc, but these objects are pushed all way touching the end of the slab
 	slab_desc_p->objects = slab + cachep->slab_size - (objects_per_slab * cachep->object_size);
-	pthread_mutex_init(&(slab_desc_p->slab_lock), NULL);
 	initialize_llnode(&(slab_desc_p->slab_list_node));
 	slab_desc_p->free_objects = objects_per_slab;
 	slab_desc_p->last_allocated_object = 0;
@@ -104,16 +103,6 @@ int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 	return 1;
 }
 
-void lock_slab(slab_desc* slab_desc_p)
-{
-	pthread_mutex_lock(&(slab_desc_p->slab_lock));
-}
-
-void unlock_slab(slab_desc* slab_desc_p)
-{
-	pthread_mutex_unlock(&(slab_desc_p->slab_lock));
-}
-
 int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 {
 	size_t objects_per_slab = number_of_objects_per_slab(cachep);
@@ -124,8 +113,6 @@ int slab_destroy(slab_desc* slab_desc_p, cache* cachep)
 	// iterate over all the objects and deinit all of them
 	for(size_t i = 0; i < objects_per_slab; i++)
 		cachep->deinit(slab_desc_p->objects + (i * cachep->object_size), cachep->object_size);
-
-	pthread_mutex_destroy(&(slab_desc_p->slab_lock));
 
 	// free slab memory
 	// since slab_desc is at the beginning of the object, it is itself also the pointer to the slab memory

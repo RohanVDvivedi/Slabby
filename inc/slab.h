@@ -12,13 +12,11 @@
 typedef struct slab_desc slab_desc;
 struct slab_desc
 {
-	// exclusive access to the list node is protected and locked by the corresponding list locks of the cache
+	// exclusive access to the list node is protected and locked by the cache_lock of the cache
 	// node used to link slab_desc
 	llnode slab_list_node;
 
 	// **** slab attributes
-
-	pthread_mutex_t slab_lock;
 
 	// pointer to the first object
 	void* objects;
@@ -49,13 +47,6 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep);
 
 // retuns false and fails if the object pointer you tried to free is not valid
 int free_object(slab_desc* slab_desc_p, void* object, cache* cachep);
-
-/*
-**	YOU MUST LOCK SLAB BEFORE PERFORMING allocate_object OR free_object OPERTION ON ANY SLAB
-*/
-
-void lock_slab(slab_desc* slab_desc_p);
-void unlock_slab(slab_desc* slab_desc_p);
 
 // returns false and fails if the slab objects were being referenced by some user
 // i.e. free_object < number of objects on the slab

@@ -114,11 +114,17 @@ void* cache_alloc(cache* cachep)
 	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
 	slab_desc* slab_desc_p = (slab_desc*) get_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
-	// lock the slab asap after you get the pointer to it
-	lock_slab(slab_desc_p);
+	// attempt to allocate the object
+	void* object = allocate_object(slab_desc_p, cachep);
+	// if allocation failed, then we do not need to do any maintainance, of transfer of slab_desc_p
+	if(object == NULL)
+	{
+		pthread_mutex_unlock(&(cachep->cache_lock));
+		return NULL;
+	}
 
-	// if there is only one object, on the slab allocate it and mave the slab to full list
-	if(slab_desc_p->free_objects == 1)
+	// if there are no free objects, on the slab, then move it to full_slab_descs
+	if(slab_desc_p->free_objects == 0)
 	{
 		remove_from_linkedlist(&(cachep->partial_slab_descs), slab_desc_p);
 		cachep->partial_slabs--;
@@ -127,10 +133,6 @@ void* cache_alloc(cache* cachep)
 	}
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
-
-	void* object = allocate_object(slab_desc_p, cachep);
-
-	unlock_slab(slab_desc_p);
 
 	return object;
 }
@@ -149,14 +151,20 @@ int cache_free(cache* cachep, void* obj)
 	// so if we know the slab, we know its slab_desc
 	slab_desc* slab_desc_p = slab;
 
-	// lock the slab asap after you get the pointer to it
-	lock_slab(slab_desc_p);
-
 	// figure out the linkedlist of this slab
 	if(slab_desc_p->free_objects > 0)
 		exists_in_partial_slabs = 1;
 	else
 		exists_in_full_slabs = 1;
+
+	// attempt to free the object
+	int freed = free_object(slab_desc_p, obj, cachep);
+	// if deallocation failed, then we do not need to do any maintainance, of transfer of slab_desc_p
+	if(freed == 0)
+	{
+		pthread_mutex_unlock(&(cachep->cache_lock));
+		return 0;
+	}
 
 	// if it is in full slabs description, move it to the end of the partial list
 	if(exists_in_full_slabs)
@@ -168,7 +176,7 @@ int cache_free(cache* cachep, void* obj)
 	}
 	else if(exists_in_partial_slabs)
 	{
-		if(slab_desc_p->free_objects == number_of_objects_per_slab(cachep) - 1)
+		if(slab_desc_p->free_objects == number_of_objects_per_slab(cachep))
 		{
 			remove_from_linkedlist(&(cachep->partial_slab_descs), slab_desc_p);
 			cachep->partial_slabs--;
@@ -178,10 +186,6 @@ int cache_free(cache* cachep, void* obj)
 	}
 
 	pthread_mutex_unlock(&(cachep->cache_lock));
-
-	int freed = free_object(slab_desc_p, obj, cachep);
-
-	unlock_slab(slab_desc_p);
 
 
 	// A small attempt to free up memory and return to OS
@@ -198,7 +202,7 @@ int cache_free(cache* cachep, void* obj)
 	return freed;
 }
 
-int  cache_grow(cache* cachep)
+int cache_grow(cache* cachep)
 {
 	pthread_mutex_lock(&(cachep->cache_lock));
 		int grew = cache_grow_unsafe(cachep);
