@@ -74,7 +74,8 @@ void* allocate_object(slab_desc* slab_desc_p, cache* cachep)
 int free_object(slab_desc* slab_desc_p, void* object, cache* cachep)
 {
 	// if the object is not in required range, return 0 (object not freed)
-	if(!((slab_desc_p->objects <= object) && (object < ((void*)slab_desc_p))))
+	// slab objects start at slab_desc_p->objects and end exclusively at slab + slab_size
+	if(!((slab_desc_p->objects <= object) && (object < ((void*)slab_desc_p) + cachep->slab_size)))
 		return 0;
 
 	// object must be a multiple of object_size away from the first object in the slab
