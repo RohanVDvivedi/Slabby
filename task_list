@@ -1,2 +1,0 @@
-* move slab descriptor struct to the from of the slab and object one after the another boundarying the end of the slab
-* the above task will fulfill alignment requirements of both the slab descriptor and the object inside the slab
