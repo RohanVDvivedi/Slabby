@@ -144,7 +144,10 @@ int cache_free(cache* cachep, void* obj)
 
 	// since all the slabs are aligned to their sizes, we get the pointer to the slab of this object by :
 	void* slab = obj - (((uintptr_t)obj) % cachep->slab_size);
-	slab_desc* slab_desc_p = get_slab_desc(slab, cachep);
+
+	// since slab_desc is at the beginning of the slab,
+	// so if we know the slab, we know its slab_desc
+	slab_desc* slab_desc_p = slab;
 
 	// lock the slab asap after you get the pointer to it
 	lock_slab(slab_desc_p);
