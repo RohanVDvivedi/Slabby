@@ -135,6 +135,19 @@ int main()
 		if(objects_allocated[i])
 			fr = cache_free(&cash, objects_allocated[i]);
 		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
+		if(i == objects_n / 5)
+			break;
+	}
+
+	printf("\n");
+
+	// testing double free
+	for(uint32_t i = 0; i < objects_n; i++)
+	{
+		int fr = 0;
+		if(objects_allocated[i])
+			fr = cache_free(&cash, objects_allocated[i]);
+		printf("free object %d => addr : %p\n", fr, objects_allocated[i]);
 	}
 
 	printf("\n");
