@@ -4,8 +4,8 @@
 #include<pthread.h>
 #include<stdio.h>
 
-#include<singlylist.h>
-#include<linkedlist.h>
+#include<cutlery/singlylist.h>
+#include<cutlery/linkedlist.h>
 
 #define NO_MAX_MEMORY_LIMIT 0
 

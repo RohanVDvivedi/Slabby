@@ -1,7 +1,7 @@
-#include<slab.h>
+#include<slabby/slab.h>
 
-#include<cache.h>
-#include<bitmap.h>
+#include<slabby/cache.h>
+#include<cutlery/bitmap.h>
 
 #include<strings.h>  /* ffs */
 #include<stdlib.h> /*aligned_alloc and free*/

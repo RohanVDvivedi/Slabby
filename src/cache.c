@@ -1,6 +1,6 @@
-#include<cache.h>
+#include<slabby/cache.h>
 
-#include<slab.h>
+#include<slabby/slab.h>
 
 #include<stdint.h>
 #include<stddef.h>

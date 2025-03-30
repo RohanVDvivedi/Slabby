@@ -22,7 +22,7 @@ references : His paper [here](https://pdfs.semanticscholar.org/1acc/3a14da69dd24
 ## Using The library
  * add `-lslabby -lpthread -lcutlery` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `#include<cache.h>`
+   * `#include<slabby/cache.h>`
 
 ## Instructions for uninstalling library
 
