@@ -5,9 +5,6 @@
 #include<stdint.h>
 #include<stddef.h>
 
-#define min(a,b) (((a)<(b))?(a):(b))
-#define max(a,b) (((a)>(b))?(a):(b))
-
 size_t number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
