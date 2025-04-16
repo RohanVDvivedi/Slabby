@@ -30,8 +30,8 @@ slab_desc* slab_create(cache* cachep)
 	slab_desc_p->last_allocated_object = 0;
 
 	// initialize the free bitmap, set all bits to 1 to indicate that they are free
-	// set all the bits, including the ones that are left over (and not used) in the bitmap
-	set_all_bits(slab_desc_p->free_bitmap, (objects_per_slab + 7) / 8 * 8);
+	// set all the bits, in the bitmap
+	set_all_bits(slab_desc_p->free_bitmap, objects_per_slab);
 
 	// init all the objects
 	for(size_t i = 0; i < objects_per_slab; i++)
