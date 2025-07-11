@@ -9,8 +9,8 @@ size_t number_of_objects_per_slab(cache* cachep)
 {
 	// number of unused bits in slab after alloting slab_description structure
 	// divided by the number of bits that will be occupied by the object
-	// each object will occupy 1 bot to store if it is allocated to user or is free
-	return ( 8 * (cachep->slab_size - sizeof(slab_desc)) ) / (8 * cachep->object_size + 1);
+	// each object will occupy 1 bit to store if it is allocated to user or is free
+	return ( CHAR_BIT * (cachep->slab_size - sizeof(slab_desc)) ) / (CHAR_BIT * cachep->object_size + 1);
 }
 
 static size_t get_cache_memory_hoarded_unsafe(cache* cachep)

@@ -32,7 +32,7 @@ struct cache
 	// if this limit is reached then the cache will not be allocating any further memory
 	// a max_memory_hoarding = 0, means that there is not limit in memory being used
 
-	// number_of_objects_per_slab = ( (8*(slab_size-sizeof(slab_desc))) / ((8*object_size)+1))
+	// number_of_objects_per_slab = ( (CHAR_BIT*(slab_size-sizeof(slab_desc))) / ((CHAR_BIT*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not
 
 	void (*init)(void*, size_t);		// called on all objects when a new slab is added to the cache
