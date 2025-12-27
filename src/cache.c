@@ -4,7 +4,7 @@
 
 #include<unistd.h>
 #include<stdint.h>
-#include<stddef.h>
+#include<stdlib.h>
 
 size_t number_of_objects_per_slab(cache* cachep)
 {
