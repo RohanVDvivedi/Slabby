@@ -122,11 +122,8 @@ void* cache_alloc(cache* cachep)
 		cachep->partial_slabs++;
 	}
 
-	// get any one slab from the first one third of the slab list
-	// we aim to not finish up all the slabs in the partial list at the same time
-	// this designed allowed concurrency for several concurrent allocations in separate slabs, but this reasoning is now obsolete
-	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
-	slab_desc* slab_desc_p = (slab_desc*) get_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
+	// get any one slab from the partially filled one to allocate the new object
+	slab_desc* slab_desc_p = (slab_desc*) get_head_of_linkedlist(&(cachep->partial_slab_descs));
 
 	// attempt to allocate the object
 	void* object = allocate_object(slab_desc_p, cachep);
