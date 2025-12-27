@@ -23,14 +23,13 @@ struct cache
 	size_t full_slabs;
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
 
-	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096 and 
-								// greater than atleast 32 times the size of the object
+	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096
 
-	size_t object_size;			// size of each object in bytes, this must always be a multiple of 64
+	size_t object_size;			// size of each object in bytes, this must always be a multiple of 8 (for correct alignment of all the objects individually)
 
 	size_t max_memory_hoarding;	// this is the maximum memory that this cache will hoard to allocate objects
 	// if this limit is reached then the cache will not be allocating any further memory
-	// a max_memory_hoarding = 0, means that there is not limit in memory being used
+	// a max_memory_hoarding = 0, means that there is no limit in memory being used
 
 	// number_of_objects_per_slab = ( (CHAR_BIT*(slab_size-sizeof(slab_desc))) / ((CHAR_BIT*object_size)+1))
 	// 1 bit for allocation mapping, to check if a object is allocated or not

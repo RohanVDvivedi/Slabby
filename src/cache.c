@@ -106,8 +106,9 @@ void* cache_alloc(cache* cachep)
 		cachep->partial_slabs++;
 	}
 
-	// get any one slab from the first one third of the slab list, this lessens the lock contention over the same slab by different threads
-	// at the same time we aim to not finish up all the slabs in the partial list at the same time
+	// get any one slab from the first one third of the slab list
+	// we aim to not finish up all the slabs in the partial list at the same time
+	// this designed allowed concurrency for several concurrent allocations in separate slabs, but this reasoning is now obsolete
 	size_t slab_to_pick = (((size_t)pthread_self()) % cachep->partial_slabs)/3;
 	slab_desc* slab_desc_p = (slab_desc*) get_from_head_of_linkedlist(&(cachep->partial_slab_descs), slab_to_pick);
 
@@ -185,10 +186,7 @@ int cache_free(cache* cachep, void* obj)
 	pthread_mutex_unlock(&(cachep->cache_lock));
 
 
-	// A small attempt to free up memory and return to OS
-	// if there are more free slabs then required
-	// this needs to be done separately of the freeing
-	// else we might end up freeing the free_slab from which we are about to free an object from
+	// a small attempt to free up memory and return to OS, if there are more free slabs then required
 	pthread_mutex_lock(&(cachep->cache_lock));
 
 	while(cachep->partial_slabs < cachep->free_slabs)

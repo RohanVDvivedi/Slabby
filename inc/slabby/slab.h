@@ -6,8 +6,9 @@
 #include<cutlery/linkedlist.h>
 
 // slab_desc is short for slab_description
-// this structure is always present at the end of the slab
-// a slab is a group of n contiguous 4KB pages
+// this structure is always present at the start of the slab
+// a slab is a group of some contiguous 4KB pages
+// the objects in the slab are pushed to occupy the space aligning with the end of slab
 
 typedef struct slab_desc slab_desc;
 struct slab_desc
