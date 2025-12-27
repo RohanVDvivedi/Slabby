@@ -156,7 +156,7 @@ int cache_free(cache* cachep, void* obj)
 	int exists_in_partial_slabs = 0;
 
 	// since all the slabs are aligned to their sizes, we get the pointer to the slab of this object by :
-	void* slab = obj - (((uintptr_t)obj) % cachep->slab_size);
+	void* slab = (void*)(UINT_ALIGN_DOWN(((uintptr_t)obj), ((uintptr_t)(cachep->slab_size))));
 
 	// since slab_desc is at the beginning of the slab,
 	// so if we know the slab, we know its slab_desc
