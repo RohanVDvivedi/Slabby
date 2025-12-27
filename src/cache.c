@@ -59,9 +59,9 @@ void cache_create(	cache* cachep,
 	pthread_mutex_init(&(cachep->cache_lock), NULL);
 
 	// always a multiple of 4096
-	cachep->slab_size = (((slab_size+4095)/4096)*4096);	// equivalent to multiple of 4096 more than or equal to slab_size
-	cachep->object_size = object_size;
-	cachep->max_memory_hoarding = (((max_memory_hoarding+4095)/4096)*4096);
+	cachep->slab_size = UINT_ALIGN_UP(slab_size, 4096);
+	cachep->object_size = object_size; // user must ensure that it is multiple of 8, to ensure correct alignment of other objects in the same slab
+	cachep->max_memory_hoarding = UINT_ALIGN_UP(max_memory_hoarding, 4096);
 
 	cachep->free_slabs = 0;
 	initialize_singlylist(&(cachep->free_slab_descs), offsetof(slab_desc, slab_list_node));
