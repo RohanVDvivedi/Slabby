@@ -1,2 +1,0 @@
-* make page alignment not a requirement for the allocation of the slab
-* use a bst instead to find the lab that it belongs to
