@@ -166,8 +166,14 @@ int cache_free(cache* cachep, void* obj)
 	int exists_in_full_slabs = 0;
 	int exists_in_partial_slabs = 0;
 
-	// since all the slabs are aligned to their sizes, we get the pointer to the slab of this object by :
-	void* slab = (void*)(UINT_ALIGN_DOWN(((uintptr_t)obj), ((uintptr_t)(cachep->slab_size))));
+	// find a slab that is at an address just below the address of the object
+	// and this slab will contain it only if it is slab_size bytes of that slab's pointer
+	void* slab = (void*)find_preceding_or_equals_in_bst(&(cachep->all_slabs_by_pointer), obj);
+	if((obj - slab) >= cachep->slab_size)
+	{
+		pthread_mutex_unlock(&(cachep->cache_lock));
+		return 0;
+	}
 
 	// since slab_desc is at the beginning of the slab,
 	// so if we know the slab, we know its slab_desc
