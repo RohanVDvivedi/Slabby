@@ -4,18 +4,33 @@
 #include<pthread.h>
 
 #include<cutlery/linkedlist.h>
+#include<cutlery/bst.h>
 
 // slab_desc is short for slab_description
 // this structure is always present at the start of the slab
 // a slab is a group of some contiguous 4KB pages
 // the objects in the slab are pushed to occupy the space aligning with the end of slab
 
+// alignment for the alocation of a slab
+// as of now they are created aligned to page boundary
+#define SLAB_ALIGNMENT (4096)
+
+/*
+	slab_desc struct describes the slab and is always at the front of the slab
+	i.e. having pointer to the slab is same as havin pointer to the slab description
+	additionally all the slab objects are always pushed back with the last slab object touching the end address of the slab
+*/
+
 typedef struct slab_desc slab_desc;
 struct slab_desc
 {
 	// exclusive access to the list node is protected and locked by the cache_lock of the cache
-	// node used to link slab_desc
+	// node used to link slab_desc in partial/full and empty slabs
 	llnode slab_list_node;
+
+	// exclusive access to the all_slabs_by_pointer node is protected and locked by the cache_lock of the cache
+	// node used to link slab_desc, in a bst ordering them by their pointers
+	bstnode all_slabs_by_pointer_node;
 
 	// **** slab attributes
 

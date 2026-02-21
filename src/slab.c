@@ -13,7 +13,7 @@ slab_desc* slab_create(cache* cachep)
 	size_t objects_per_slab = number_of_objects_per_slab(cachep);
 
 	// allocate memory equivalent to the size of slab, and aligned to slize of slab
-	void* slab = aligned_alloc(cachep->slab_size, cachep->slab_size);
+	void* slab = aligned_alloc(SLAB_ALIGNMENT, cachep->slab_size);
 
 	// fail if we fail to allocate memory for the slab
 	if(slab == NULL)
@@ -26,6 +26,7 @@ slab_desc* slab_create(cache* cachep)
 	// slab objects always start after the slab_desc, but these objects are pushed all way touching the end of the slab
 	slab_desc_p->objects = slab + cachep->slab_size - (objects_per_slab * cachep->object_size);
 	initialize_llnode(&(slab_desc_p->slab_list_node));
+	initialize_bstnode(&(slab_desc_p->all_slabs_by_pointer_node));
 	slab_desc_p->free_objects = objects_per_slab;
 	slab_desc_p->last_allocated_object = 0;
 

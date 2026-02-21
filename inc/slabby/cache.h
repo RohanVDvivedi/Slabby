@@ -6,6 +6,7 @@
 
 #include<cutlery/singlylist.h>
 #include<cutlery/linkedlist.h>
+#include<cutlery/bst.h>
 
 #define NO_MAX_MEMORY_LIMIT 0
 
@@ -22,6 +23,8 @@ struct cache
 
 	size_t full_slabs;
 	linkedlist full_slab_descs;			// list of full slabs, a slab is moved to-fro free and full slabs as required
+
+	bst all_slabs_by_pointer; 			// collection of all the slabs it is used to check what slab is a particular memory address falling into, this knowledge is important for deallocating it
 
 	size_t slab_size;			// size of each slab in bytes, must always be multiple of 4096
 

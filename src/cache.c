@@ -2,6 +2,8 @@
 
 #include<slabby/slab.h>
 
+#include<cutlery/cutlery_math.h>
+
 #include<unistd.h>
 #include<stdint.h>
 #include<stdlib.h>
@@ -12,6 +14,11 @@ size_t number_of_objects_per_slab(cache* cachep)
 	// divided by the number of bits that will be occupied by the object
 	// each object will occupy 1 bit to store if it is allocated to user or is free
 	return ( CHAR_BIT * (cachep->slab_size - sizeof(slab_desc)) ) / (CHAR_BIT * cachep->object_size + 1);
+}
+
+static int compare_slabs_by_pointer(const void* slab1, const void* slab2)
+{
+	return compare_numbers(((cy_uint)slab1), ((cy_uint)slab2));
 }
 
 static size_t get_cache_memory_hoarded_unsafe(cache* cachep)
@@ -29,6 +36,7 @@ static int cache_grow_unsafe(cache* cachep)
 		return 0;
 
 	insert_head_in_singlylist(&(cachep->free_slab_descs), slab_desc_p);
+	insert_in_bst(&(cachep->all_slabs_by_pointer), slab_desc_p);
 	cachep->free_slabs++;
 	return 1;
 }
@@ -39,6 +47,7 @@ static int cache_reap_unsafe(cache* cachep)
 	{
 		slab_desc* slab_desc_p = (slab_desc*) get_head_of_singlylist(&(cachep->free_slab_descs));
 		remove_head_from_singlylist(&(cachep->free_slab_descs));
+		remove_from_bst(&(cachep->all_slabs_by_pointer), slab_desc_p);
 		cachep->free_slabs--;
 		slab_destroy(slab_desc_p, cachep);
 		return 1;
@@ -85,6 +94,8 @@ void cache_create(	cache* cachep,
 	initialize_linkedlist(&(cachep->partial_slab_descs), offsetof(slab_desc, slab_list_node));
 	cachep->full_slabs = 0;
 	initialize_linkedlist(&(cachep->full_slab_descs), offsetof(slab_desc, slab_list_node));
+
+	initialize_bst(&(cachep->all_slabs_by_pointer), RED_BLACK_TREE, &simple_comparator(compare_slabs_by_pointer), offsetof(slab_desc, all_slabs_by_pointer_node));
 
 	cachep->init = init;
 	cachep->deinit = deinit;
